@@ -1,0 +1,17 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/wellora
+  application:
+    name: wellora-backend
+
+jwt:
+  secret: wellora-secret-key-2024
+  expiration: 86400
+
+logging:
+  level:
+    br.com.fiap.wellora: DEBUG
