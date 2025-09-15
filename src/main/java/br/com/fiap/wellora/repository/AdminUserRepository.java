@@ -1,10 +1,11 @@
 package br.com.fiap.wellora.repository;
 
-import br.com.fiap.wellora.model.AdminUser;
+import java.util.Optional;
+
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
+import br.com.fiap.wellora.model.AdminUser;
 
 /**
  * Repository para gerenciar usuarios administradores

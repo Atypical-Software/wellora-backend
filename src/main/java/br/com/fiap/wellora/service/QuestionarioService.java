@@ -1,10 +1,12 @@
 package br.com.fiap.wellora.service;
 
-import br.com.fiap.wellora.model.QuestionarioPsicossocial;
-import br.com.fiap.wellora.repository.QuestionarioRepository;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.util.List;
+
+import br.com.fiap.wellora.model.QuestionarioPsicossocial;
+import br.com.fiap.wellora.repository.QuestionarioRepository;
 
 @Service
 public class QuestionarioService {
