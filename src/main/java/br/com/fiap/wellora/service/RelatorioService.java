@@ -62,13 +62,10 @@ public class RelatorioService {
     public Object gerarRelatorioUsuario(String token) throws Exception {
         String email = jwtService.getEmailFromToken(token);
         Map<String, Object> relatorio = new HashMap<>();
-ECHO está ativado.
         List<CheckinHumor> checkins = checkinHumorRepository.findByUsuarioIdOrderByDataHoraDesc(email);
         List<QuestionarioPsicossocial> questionarios = questionarioRepository.findByUsuarioIdOrderByDataPreenchimentoDesc(email);
-ECHO está ativado.
         relatorio.put("checkinsRecentes", checkins.stream().limit(10).collect(Collectors.toList()));
         relatorio.put("questionarios", questionarios);
-ECHO está ativado.
         return relatorio;
     }
 }

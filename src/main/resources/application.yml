@@ -1,17 +1,29 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   data:
     mongodb:
-      uri: mongodb://localhost:27017/wellora
+      uri: ${MONGODB_URI:mongodb://localhost:27017/wellora}
   application:
     name: wellora-backend
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
 
 jwt:
-  secret: wellora-secret-key-2024
-  expiration: 86400
+  secret: ${JWT_SECRET:wellora-secret-key-2024}
+  expiration: ${JWT_EXPIRATION:86400}
 
 logging:
   level:
-    br.com.fiap.wellora: DEBUG
+    br.com.fiap.wellora: ${LOG_LEVEL:DEBUG}
+    org.springframework.security: WARN
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always

@@ -21,13 +21,10 @@ public class QuestionarioService {
     public QuestionarioPsicossocial salvarQuestionario(QuestionarioPsicossocial questionario, String token) throws Exception {
         String email = jwtService.getEmailFromToken(token);
         questionario.setUsuarioId(email);
-ECHO está ativado.
         QuestionarioPsicossocial resultado = questionarioRepository.save(questionario);
-ECHO está ativado.
         // Log de auditoria
         auditoriaService.logarAcao(email, "QUESTIONARIO_RESPONDIDO", 
             "Questionário concluído. Nível de risco: " + resultado.getNivelRisco(), "127.0.0.1");
-ECHO está ativado.
         return resultado;
     }
 

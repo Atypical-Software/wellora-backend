@@ -22,13 +22,10 @@ public class HumorService {
     public CheckinHumor registrarCheckin(CheckinHumor checkin, String token) throws Exception {
         String email = jwtService.getEmailFromToken(token);
         checkin.setUsuarioId(email);
-ECHO está ativado.
         CheckinHumor novoCheckin = checkinHumorRepository.save(checkin);
-ECHO está ativado.
         // Log de auditoria
         auditoriaService.logarAcao(email, "CHECKIN_HUMOR", 
             "Humor registrado: " + checkin.getHumor(), "127.0.0.1");
-ECHO está ativado.
         return novoCheckin;
     }
 
