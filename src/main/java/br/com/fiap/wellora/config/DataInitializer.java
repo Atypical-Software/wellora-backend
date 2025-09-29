@@ -1,12 +1,14 @@
 package br.com.fiap.wellora.config;
 
-import br.com.fiap.wellora.model.Usuario;
-import br.com.fiap.wellora.repository.UsuarioRepository;
+import java.util.Set;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import java.util.Set;
+
+import br.com.fiap.wellora.model.Usuario;
+import br.com.fiap.wellora.repository.UsuarioRepository;
 
 @Component
 public class DataInitializer implements CommandLineRunner {
