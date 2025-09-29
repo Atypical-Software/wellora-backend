@@ -31,6 +31,7 @@ USER spring:spring
 
 EXPOSE 8080
 ENV SPRING_PROFILES_ACTIVE=prod
+ENV PORT=8080
 
 # Adicionar configurações SSL para MongoDB
 CMD ["java", \
