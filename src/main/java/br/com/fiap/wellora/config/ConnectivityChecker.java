@@ -2,7 +2,6 @@ package br.com.fiap.wellora.config;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -15,14 +14,8 @@ public class ConnectivityChecker {
 
     public void checkConnectivity() {
         System.out.println("=== VERIFICAÇÃO DE CONECTIVIDADE ===");
-        
-        // Testar DNS resolution
         testDnsResolution();
-        
-        // Testar conectividade TCP
         testTcpConnectivity();
-        
-        // Mostrar configurações
         showEnvironmentInfo();
     }
 

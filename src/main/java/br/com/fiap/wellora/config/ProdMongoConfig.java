@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
-
 import com.mongodb.MongoClientSettings;
 import com.mongodb.ConnectionString;
 import com.mongodb.client.MongoClient;
@@ -20,10 +19,8 @@ public class ProdMongoConfig {
     @Bean
     public MongoClient mongoClient() {
         try {
-            // Configuração SSL específica para resolver problema Render + MongoDB Atlas
             String modifiedUri = mongoUri;
             
-            // Adicionar parâmetros SSL mais específicos
             if (!mongoUri.contains("ssl=") && !mongoUri.contains("tls=")) {
                 String separator = mongoUri.contains("?") ? "&" : "?";
                 modifiedUri = mongoUri + separator + 
@@ -43,14 +40,6 @@ public class ProdMongoConfig {
                     "minPoolSize=1";
             }
             
-            System.out.println("=== MONGODB CONFIG ===");
-            System.out.println("URI Original (mascarada): " + 
-                mongoUri.replaceAll("://[^@]+@", "://***:***@"));
-            System.out.println("URI Modificada (mascarada): " + 
-                modifiedUri.replaceAll("://[^@]+@", "://***:***@"));
-            System.out.println("=======================");
-            
-            // Configurações SSL específicas do Java
             System.setProperty("com.mongodb.useJSSE", "false");
             System.setProperty("jdk.tls.useExtendedMasterSecret", "false");
             System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
@@ -70,10 +59,6 @@ public class ProdMongoConfig {
             return MongoClients.create(settings);
             
         } catch (Exception e) {
-            System.err.println("Erro ao configurar MongoDB: " + e.getMessage());
-            System.err.println("Tentando configuração básica...");
-            
-            // Fallback: tentar URI original
             return MongoClients.create(mongoUri);
         }
     }
