@@ -11,7 +11,7 @@
         <version>3.2.0</version>
     </parent>
     <properties>
-        <java.version>17</java.version>
+        <java.version>11</java.version>
     </properties>
     <dependencies>
         <dependency>
@@ -21,12 +21,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-mongodb</artifactId>
-        </dependency>
-        <!-- MongoDB Driver específico para JDK 17 + SSL -->
-        <dependency>
-            <groupId>org.mongodb</groupId>
-            <artifactId>mongodb-driver-sync</artifactId>
-            <version>4.11.1</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

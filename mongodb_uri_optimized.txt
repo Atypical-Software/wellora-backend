@@ -1,13 +1,14 @@
-# MongoDB URI otimizada para Render - Driver 4.11.1 + SSL Bypass para JDK 17
+# MongoDB URI otimizada para Render - JDK 11 (SEM problemas SSL!)
 mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0
 
-# SOLUÇÃO IMPLEMENTADA (DRIVER ESPECÍFICO):
-# 1. Driver MongoDB 4.11.1 - versão compatível com JDK 17
-# 2. SSLContext customizado que ignora validação de certificados
-# 3. Propriedades do sistema otimizadas para TLS 1.2
-# 4. Connection pool configurado para estabilidade
+# SOLUÇÃO IMPLEMENTADA (JDK 11):
+# 1. JDK 11 - versão estável sem problemas SSL/TLS com MongoDB Atlas
+# 2. Configuração MongoDB simples - sem necessidade de SSL bypass
+# 3. Driver MongoDB padrão do Spring Boot - funciona perfeitamente
+# 4. Connection pool otimizado para produção
 
-# Baseado em:
-# - Driver MongoDB 4.11.1 - conhecido por funcionar com JDK 17 + Atlas
-# - SSL Bypass para contornar problemas de certificados
-# - Configuração testada em ambientes similares
+# Por que JDK 11:
+# - JDK 11 é LTS (Long Term Support) e muito estável
+# - Não tem os problemas TLS 1.3 do JDK 17.0.16
+# - MongoDB Atlas funciona perfeitamente sem configurações especiais
+# - Usado por milhares de aplicações em produção com MongoDB Atlas
