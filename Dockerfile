@@ -42,6 +42,9 @@ CMD ["java", \
      "-Djavax.net.ssl.keyStore=/opt/java/openjdk/lib/security/cacerts", \
      "-Djavax.net.ssl.keyStorePassword=changeit", \
      "-Djdk.tls.useExtendedMasterSecret=false", \
-     "-Dhttps.protocols=TLSv1.2,TLSv1.3", \
-     "-Djdk.tls.client.protocols=TLSv1.2,TLSv1.3", \
+     "-Djdk.tls.client.protocols=TLSv1.2", \
+     "-Djavax.net.ssl.trustStoreType=JKS", \
+     "-Djdk.tls.namedGroups=secp256r1,secp384r1,secp521r1,sect283k1,sect283r1,sect409k1,sect409r1,sect571k1,sect571r1,secp256k1", \
+     "-Djavax.net.ssl.sessionCacheSize=0", \
+     "-Dhttps.protocols=TLSv1.2", \
      "-jar", "app.jar"]
