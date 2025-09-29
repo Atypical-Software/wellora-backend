@@ -8,19 +8,23 @@ spring:
   application:
     name: wellora-backend
   profiles:
-    active: ${SPRING_PROFILES_ACTIVE:dev}
+    active: ${SPRING_PROFILES_ACTIVE:prod}
 
 jwt:
-  secret: ${JWT_SECRET}
+  secret: ${JWT_SECRET:mySecretKeyForDevelopmentOnlyNotForProduction123456789}
   expiration: ${JWT_EXPIRATION:86400}
   anonymous:
-    secret: ${JWT_ANONYMOUS_SECRET}
+    secret: ${JWT_ANONYMOUS_SECRET:myAnonymousSecretKeyForDevelopmentOnly123456789}
     expiration: ${JWT_ANONYMOUS_EXPIRATION:3600}
 
 logging:
   level:
-    '[br.com.fiap.wellora]': ${LOG_LEVEL:DEBUG}
+    '[br.com.fiap.wellora]': ${LOG_LEVEL:INFO}
     '[org.springframework.security]': WARN
+    '[com.mongodb]': WARN
+    '[org.mongodb.driver]': WARN
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 management:
   endpoints:
