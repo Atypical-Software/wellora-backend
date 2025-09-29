@@ -25,9 +25,13 @@ public class DataInitializer implements CommandLineRunner {
         connectivityChecker.checkConnectivity();
         
         try {
+            // Aguardar um pouco antes de tentar inicializar dados
+            Thread.sleep(5000);
             initializeDefaultData();
+            System.out.println("✅ Dados inicializados com sucesso!");
         } catch (Exception e) {
-            System.err.println("Erro ao inicializar dados: " + e.getMessage());
+            System.err.println("❌ Erro ao inicializar dados: " + e.getMessage());
+            // Não propagar a exceção para não quebrar a inicialização da aplicação
         }
     }
     

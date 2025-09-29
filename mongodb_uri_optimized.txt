@@ -1,0 +1,11 @@
+# MongoDB URI otimizada para Render com configurações SSL
+mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0&ssl=true&sslInvalidHostNameAllowed=false&connectTimeoutMS=30000&socketTimeoutMS=30000&maxIdleTimeMS=120000&maxPoolSize=10&minPoolSize=0
+
+# Explicação das opções adicionadas:
+# ssl=true - Força o uso de SSL
+# sslInvalidHostNameAllowed=false - Valida o hostname SSL
+# connectTimeoutMS=30000 - Timeout de conexão de 30s
+# socketTimeoutMS=30000 - Timeout de socket de 30s  
+# maxIdleTimeMS=120000 - Tempo máximo de idle de 2min
+# maxPoolSize=10 - Pool máximo de 10 conexões
+# minPoolSize=0 - Pool mínimo de 0 conexões

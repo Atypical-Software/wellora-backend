@@ -1,0 +1,32 @@
+server:
+  port: 8080
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/wellora
+  application:
+    name: wellora-backend
+
+jwt:
+  secret: mySecretKeyForDevelopmentOnlyNotForProduction123456789
+  expiration: 86400
+  anonymous:
+    secret: myAnonymousSecretKeyForDevelopmentOnly123456789
+    expiration: 3600
+
+logging:
+  level:
+    '[br.com.fiap.wellora]': DEBUG
+    '[org.springframework.security]': DEBUG
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
