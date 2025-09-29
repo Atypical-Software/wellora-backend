@@ -2,8 +2,6 @@ server:
   port: ${PORT:10000}
 
 spring:
-  profiles:
-    active: prod
   data:
     mongodb:
       uri: ${MONGODB_URI}
@@ -22,7 +20,7 @@ logging:
     '[br.com.fiap.wellora]': INFO
     '[org.springframework.security]': WARN
   pattern:
-    console: "%%d{HH:mm:ss.SSS} [%%thread] %%-5level %%logger{36} - %%msg%%n"
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
 management:
   endpoints:
