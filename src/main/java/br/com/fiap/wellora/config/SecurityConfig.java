@@ -27,6 +27,7 @@ public class SecurityConfig {
                 .requestMatchers(new AntPathRequestMatcher("/api/anonymous/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/health/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/debug/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/relatorio/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/swagger-ui/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/v3/api-docs/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/actuator/**")).permitAll()
