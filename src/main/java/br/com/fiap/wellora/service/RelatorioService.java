@@ -12,8 +12,10 @@ import org.springframework.stereotype.Service;
 import br.com.fiap.wellora.dto.RelatorioAdminResponse;
 import br.com.fiap.wellora.model.CheckinHumor;
 import br.com.fiap.wellora.model.QuestionarioPsicossocial;
+import br.com.fiap.wellora.model.ResponseAnalytics;
 import br.com.fiap.wellora.repository.CheckinHumorRepository;
 import br.com.fiap.wellora.repository.QuestionarioRepository;
+import br.com.fiap.wellora.repository.ResponseAnalyticsRepository;
 
 @Service
 public class RelatorioService {
@@ -25,18 +27,40 @@ public class RelatorioService {
     private QuestionarioRepository questionarioRepository;
 
     @Autowired
+    private ResponseAnalyticsRepository responseAnalyticsRepository;
+
+    @Autowired
     private JwtService jwtService;
 
     public RelatorioAdminResponse gerarRelatorioAdmin(String token) throws Exception {
         RelatorioAdminResponse relatorio = new RelatorioAdminResponse();
         relatorio.setTitulo("Relatório de Bem-estar Organizacional");
 
-        // Dados de pesquisas
-        List<QuestionarioPsicossocial> questionarios = questionarioRepository.findAll();
-        int totalQuestionarios = questionarios.size();
-        RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
-            totalQuestionarios, totalQuestionarios + 10, (totalQuestionarios * 100) / (totalQuestionarios + 10));
-        relatorio.setPesquisas(pesquisas);
+        // Buscar dados REAIS da coleção responseAnalytics
+        List<ResponseAnalytics> analytics = responseAnalyticsRepository.findAllByOrderByCreatedAtDesc();
+        
+        // Dados de pesquisas baseados nos dados REAIS do MongoDB
+        int totalRespostas = analytics.stream()
+                .mapToInt(ResponseAnalytics::getTotalResponses)
+                .sum();
+        int totalQuestionarios = analytics.size();
+        
+        // Se há analytics, usar dados reais. Senão, fallback para questionarios antigos
+        if (totalQuestionarios > 0) {
+            int meta = totalQuestionarios + 5; // Meta um pouco maior que o atual
+            int porcentagemConclusao = (totalQuestionarios * 100) / meta;
+            RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
+                totalQuestionarios, meta, porcentagemConclusao);
+            relatorio.setPesquisas(pesquisas);
+        } else {
+            // Fallback para dados antigos
+            List<QuestionarioPsicossocial> questionarios = questionarioRepository.findAll();
+            int totalQuestionariosAntigos = questionarios.size();
+            RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
+                totalQuestionariosAntigos, totalQuestionariosAntigos + 10, 
+                totalQuestionariosAntigos > 0 ? (totalQuestionariosAntigos * 100) / (totalQuestionariosAntigos + 10) : 0);
+            relatorio.setPesquisas(pesquisas);
+        }
 
         // Dados de sentimentos
         List<CheckinHumor> checkins = checkinHumorRepository.findAll();
