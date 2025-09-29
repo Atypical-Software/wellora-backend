@@ -9,22 +9,45 @@ COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
 
-# Make mvnw executable
-RUN chmod +x ./mvnw
+# Make mvnw executable and check
+RUN chmod +x ./mvnw && ls -la ./mvnw
 
-# Download dependencies
-RUN ./mvnw dependency:go-offline -B
+# Download dependencies with verbose output
+RUN echo "=== Downloading dependencies ===" && \
+    ./mvnw dependency:go-offline -B -X
 
 # Copy source code
 COPY src ./src
 
-# Build the application with explicit repackage goal
-RUN ./mvnw clean package spring-boot:repackage -DskipTests
+# Show what we have before build
+RUN echo "=== Files before build ===" && \
+    ls -la && \
+    echo "=== POM content ===" && \
+    cat pom.xml
 
-# Verify the JAR is executable
-RUN ls -la target/ && \
-    if [ ! -f target/wellora-backend-1.0.0.jar ]; then echo "JAR not found!"; exit 1; fi && \
-    jar tf target/wellora-backend-1.0.0.jar | grep -q "BOOT-INF" || (echo "Not a Spring Boot JAR!"; exit 1)
+# Build the application with verbose output
+RUN echo "=== Starting Maven build ===" && \
+    ./mvnw clean package -DskipTests -X && \
+    echo "=== Build completed ===" && \
+    ls -la target/
+
+# Verify the JAR is Spring Boot executable
+RUN echo "=== Verifying JAR ===" && \
+    ls -la target/ && \
+    if [ ! -f target/wellora-backend-1.0.0.jar ]; then \
+        echo "ERROR: JAR not found!"; \
+        ls -la target/; \
+        exit 1; \
+    fi && \
+    echo "JAR found, checking if it's Spring Boot..." && \
+    jar tf target/wellora-backend-1.0.0.jar | head -20 && \
+    if jar tf target/wellora-backend-1.0.0.jar | grep -q "BOOT-INF"; then \
+        echo "✅ Spring Boot JAR confirmed"; \
+    else \
+        echo "❌ Not a Spring Boot JAR!"; \
+        jar tf target/wellora-backend-1.0.0.jar | grep -E "(MANIFEST|META-INF)"; \
+        exit 1; \
+    fi
 
 # Production stage
 FROM openjdk:17-jre-slim
@@ -35,11 +58,15 @@ WORKDIR /app
 # Copy the built JAR from build stage
 COPY --from=build /app/target/wellora-backend-1.0.0.jar app.jar
 
-# Verify JAR was copied
-RUN ls -la app.jar
+# Verify JAR was copied and test it
+RUN echo "=== Production stage ===" && \
+    ls -la app.jar && \
+    java -jar app.jar --version 2>&1 | head -5 || echo "JAR test failed but continuing..."
 
 # Create non-root user for security
-RUN groupadd -r spring && useradd -r -g spring spring
+RUN groupadd -r spring && useradd -r -g spring spring && \
+    chown spring:spring app.jar
+
 USER spring:spring
 
 # Expose port

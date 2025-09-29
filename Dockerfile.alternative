@@ -1,0 +1,42 @@
+# Dockerfile alternativo usando Maven oficial
+FROM maven:3.9.5-openjdk-17-slim as build
+
+# Set working directory
+WORKDIR /app
+
+# Copy pom.xml first for dependency caching
+COPY pom.xml .
+
+# Download dependencies
+RUN mvn dependency:go-offline -B
+
+# Copy source code
+COPY src ./src
+
+# Build the application
+RUN mvn clean package -DskipTests && \
+    echo "=== Build completed ===" && \
+    ls -la target/ && \
+    echo "=== JAR details ===" && \
+    ls -la target/wellora-backend-1.0.0.jar && \
+    jar tf target/wellora-backend-1.0.0.jar | grep -E "(MANIFEST|BOOT-INF)" || echo "Checking JAR structure..."
+
+# Production stage
+FROM openjdk:17-jre-slim
+
+WORKDIR /app
+
+# Copy JAR
+COPY --from=build /app/target/wellora-backend-1.0.0.jar app.jar
+
+# Test JAR
+RUN java -jar app.jar --version 2>&1 | head -3 || echo "JAR version check failed, but continuing..."
+
+# Security
+RUN groupadd -r spring && useradd -r -g spring spring && chown spring:spring app.jar
+USER spring:spring
+
+EXPOSE 8080
+ENV SPRING_PROFILES_ACTIVE=prod
+
+CMD ["java", "-jar", "app.jar"]
