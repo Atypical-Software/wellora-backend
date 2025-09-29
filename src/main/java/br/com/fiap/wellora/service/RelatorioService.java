@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -58,39 +59,48 @@ public class RelatorioService {
             relatorio.setPesquisas(pesquisas);
         }
 
-        // FEELINGS - usar responseAnalytics (PERFORMANCE!)
+        // FEELINGS - analisar respostas REAIS do anonymous_responses
         List<RelatorioAdminResponse.SentimentoInfo> sentimentos = new ArrayList<>();
         
-        if (!analytics.isEmpty()) {
-            // Usar dados PRÉ-PROCESSADOS do responseAnalytics
-            for (ResponseAnalytics analytic : analytics) {
-                int totalResponsesAnalytic = analytic.getTotalResponses();
-                
-                // Simular distribuição baseada nos analytics existentes
-                int felizes = (int) (totalResponsesAnalytic * 0.6);
-                int neutros = (int) (totalResponsesAnalytic * 0.3);
-                int cansados = totalResponsesAnalytic - felizes - neutros;
-                
-                if (felizes > 0) {
-                    sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                        "feliz", felizes, totalResponsesAnalytic > 0 ? (felizes * 100) / totalResponsesAnalytic : 0));
-                }
-                if (neutros > 0) {
-                    sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                        "neutro", neutros, totalResponsesAnalytic > 0 ? (neutros * 100) / totalResponsesAnalytic : 0));
-                }
-                if (cansados > 0) {
-                    sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                        "cansado", cansados, totalResponsesAnalytic > 0 ? (cansados * 100) / totalResponsesAnalytic : 0));
-                }
-                break; // Usar apenas o primeiro (mais recente)
-            }
-        } else if (totalRespostas > 0) {
-            // Fallback: gerar baseado nas respostas anônimas
-            int felizes = (int) (totalRespostas * 0.6);
-            int neutros = (int) (totalRespostas * 0.3);
-            int cansados = totalRespostas - felizes - neutros;
+        if (totalRespostas > 0) {
+            // Buscar TODAS as respostas reais para análise
+            Query query = new Query();
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> responses = mongoTemplate.find(query, Map.class, "anonymous_responses")
+                .stream()
+                .map(response -> (Map<String, Object>) response)
+                .collect(Collectors.toList());
             
+            System.out.println("🔍 DEBUG RelatorioService: Analisando " + responses.size() + " respostas reais");
+            
+            int felizes = 0;
+            int neutros = 0; 
+            int cansados = 0;
+            
+            // Analisar cada resposta REAL
+            for (Map<String, Object> response : responses) {
+                @SuppressWarnings("unchecked")
+                Map<String, String> respostas = (Map<String, String>) response.get("responses");
+                
+                if (respostas != null) {
+                    System.out.println("🔍 DEBUG: Analisando respostas: " + respostas);
+                    
+                    // Analisar todas as respostas da pessoa
+                    int sentimentoPessoa = analisarSentimentoDasRespostas(respostas);
+                    
+                    if (sentimentoPessoa > 0) {
+                        felizes++;
+                    } else if (sentimentoPessoa < 0) {
+                        cansados++;
+                    } else {
+                        neutros++;
+                    }
+                }
+            }
+            
+            System.out.println("🔍 DEBUG: Contagem final - Felizes: " + felizes + ", Neutros: " + neutros + ", Cansados: " + cansados);
+            
+            // Criar sentimentos baseados na análise REAL
             if (felizes > 0) {
                 sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
                     "feliz", felizes, (felizes * 100) / totalRespostas));
@@ -141,5 +151,40 @@ public class RelatorioService {
         relatorio.put("totalPesquisasAnonimas", countAnonymousResponses);
         
         return relatorio;
+    }
+    
+    /**
+     * Analisa o sentimento das respostas de uma pessoa
+     * @param respostas Map com as respostas da pessoa
+     * @return > 0 para feliz, < 0 para cansado, 0 para neutro
+     */
+    private int analisarSentimentoDasRespostas(Map<String, String> respostas) {
+        int pontuacao = 0;
+        
+        for (String resposta : respostas.values()) {
+            if (resposta == null) continue;
+            
+            String resp = resposta.toLowerCase().trim();
+            
+            // RESPOSTAS POSITIVAS/FELIZES (+1)
+            if (resp.contains("muito bem") || resp.contains("ótimo") || resp.contains("excelente") || 
+                resp.contains("satisfeito") || resp.contains("bem") || resp.contains("motivado") ||
+                resp.contains("feliz") || resp.contains("positivo") || resp.contains("bom")) {
+                pontuacao += 1;
+            }
+            
+            // RESPOSTAS NEGATIVAS/CANSADAS (-1)
+            else if (resp.contains("cansado") || resp.contains("estressado") || resp.contains("ruim") ||
+                     resp.contains("mal") || resp.contains("insatisfeito") || resp.contains("péssimo") ||
+                     resp.contains("desmotivado") || resp.contains("triste") || resp.contains("negativo")) {
+                pontuacao -= 1;
+            }
+            
+            // RESPOSTAS NEUTRAS (0) - "ok", "normal", "regular", etc.
+            // Não alteram a pontuação
+        }
+        
+        System.out.println("🔍 DEBUG: Pontuação do sentimento: " + pontuacao + " para respostas: " + respostas);
+        return pontuacao;
     }
 }
