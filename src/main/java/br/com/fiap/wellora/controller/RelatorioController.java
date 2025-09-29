@@ -24,9 +24,18 @@ public class RelatorioController {
     public ResponseEntity<RelatorioAdminResponse> obterRelatorioAdmin(
             @RequestHeader("Authorization") String token) {
         try {
+            System.out.println("🔍 DEBUG RelatorioController: Recebendo requisição admin report");
+            System.out.println("🔍 DEBUG RelatorioController: Token: " + token.substring(0, 20) + "...");
+            
             RelatorioAdminResponse relatorio = relatorioService.gerarRelatorioAdmin(token);
+            
+            System.out.println("🔍 DEBUG RelatorioController: Relatório gerado: " + relatorio);
+            System.out.println("🔍 DEBUG RelatorioController: Pesquisas: " + relatorio.getPesquisas());
+            
             return ResponseEntity.ok(relatorio);
         } catch (Exception e) {
+            System.err.println("❌ DEBUG RelatorioController: Erro: " + e.getMessage());
+            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }

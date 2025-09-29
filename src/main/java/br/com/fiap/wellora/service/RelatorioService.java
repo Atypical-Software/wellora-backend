@@ -40,22 +40,34 @@ public class RelatorioService {
         // Buscar dados REAIS da collection anonymous_responses onde estão sendo salvos
         long countAnonymousResponses = mongoTemplate.count(new Query(), "anonymous_responses");
         
+        System.out.println("🔍 DEBUG RelatorioService: Count anonymous_responses: " + countAnonymousResponses);
+        
         // Dados de pesquisas baseados nos dados REAIS do anonymous_responses
         int totalRespostas = (int) countAnonymousResponses;
         int totalQuestionarios = totalRespostas; // Cada resposta é um questionário respondido
+        
+        System.out.println("🔍 DEBUG RelatorioService: totalRespostas: " + totalRespostas);
+        System.out.println("🔍 DEBUG RelatorioService: totalQuestionarios: " + totalQuestionarios);
         
         if (totalRespostas > 0) {
             // Usar dados reais de anonymous_responses
             int meta = totalRespostas + 10; // Meta um pouco maior
             int porcentagemConclusao = (totalRespostas * 100) / meta;
+            
+            System.out.println("🔍 DEBUG RelatorioService: meta: " + meta);
+            System.out.println("🔍 DEBUG RelatorioService: porcentagemConclusao: " + porcentagemConclusao);
+            
             RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
                 totalQuestionarios, meta, porcentagemConclusao);
             relatorio.setPesquisas(pesquisas);
+            
+            System.out.println("🔍 DEBUG RelatorioService: PesquisasInfo criada: " + pesquisas);
         } else {
             // Fallback se não houver dados
             RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
                 0, 10, 0);
             relatorio.setPesquisas(pesquisas);
+            System.out.println("🔍 DEBUG RelatorioService: Usando fallback - pesquisas: " + pesquisas);
         }
 
         // Dados de sentimentos
