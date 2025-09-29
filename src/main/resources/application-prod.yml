@@ -15,10 +15,14 @@ jwt:
     secret: ${JWT_ANONYMOUS_SECRET}
     expiration: ${JWT_ANONYMOUS_EXPIRATION:3600}
 
+# Configuração TLS específica para JDK 17 + MongoDB Atlas
+# Baseada na documentação oficial: https://www.mongodb.com/docs/drivers/java/sync/current/get-started/
 logging:
   level:
     '[br.com.fiap.wellora]': INFO
     '[org.springframework.security]': WARN
+    '[com.mongodb]': WARN
+    '[org.mongodb.driver]': WARN
   pattern:
     console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 

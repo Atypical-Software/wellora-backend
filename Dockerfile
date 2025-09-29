@@ -28,10 +28,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
 CMD ["sh", "-c", "java \
      -Dserver.port=${PORT:-8080} \
      -Xmx512m -Xms256m \
-     -Dcom.mongodb.useJSSE=true \
+     -Djdk.tls.client.protocols=TLSv1.2 \
+     -Dhttps.protocols=TLSv1.2 \
      -Djavax.net.ssl.trustStore=/opt/java/openjdk/lib/security/cacerts \
      -Djavax.net.ssl.trustStorePassword=changeit \
-     -Djdk.tls.client.protocols=TLSv1.2,TLSv1.3 \
      -Djavax.net.ssl.trustStoreType=JKS \
-     -Dhttps.protocols=TLSv1.2,TLSv1.3 \
      -jar app.jar"]

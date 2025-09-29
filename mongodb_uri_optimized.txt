@@ -1,11 +1,10 @@
-# MongoDB URI otimizada para Render com configurações SSL
-mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0&ssl=true&sslInvalidHostNameAllowed=false&connectTimeoutMS=30000&socketTimeoutMS=30000&maxIdleTimeMS=120000&maxPoolSize=10&minPoolSize=0
+# MongoDB URI otimizada para Render - Baseada na documentação oficial
+mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0&tls=true&tlsAllowInvalidHostnames=false
 
-# Explicação das opções adicionadas:
-# ssl=true - Força o uso de SSL
-# sslInvalidHostNameAllowed=false - Valida o hostname SSL
-# connectTimeoutMS=30000 - Timeout de conexão de 30s
-# socketTimeoutMS=30000 - Timeout de socket de 30s  
-# maxIdleTimeMS=120000 - Tempo máximo de idle de 2min
-# maxPoolSize=10 - Pool máximo de 10 conexões
-# minPoolSize=0 - Pool mínimo de 0 conexões
+# Documentação oficial MongoDB: https://www.mongodb.com/pt-br/docs/drivers/java/sync/current/get-started/
+# Problema TLS 1.3 documentado: JDK 17.0.16 tem problemas conhecidos com TLS 1.3
+# Solução: Forçar uso de TLS 1.2 através de parâmetros JVM
+
+# Parâmetros JVM necessários:
+# -Djdk.tls.client.protocols=TLSv1.2
+# -Dhttps.protocols=TLSv1.2
