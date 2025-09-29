@@ -11,13 +11,16 @@ spring:
     name: wellora-backend
 
 jwt:
-  secret: ${JWT_SECRET:wellora-secret-key-2024}
-  expiration: 86400
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:86400}
+  anonymous:
+    secret: ${JWT_ANONYMOUS_SECRET}
+    expiration: ${JWT_ANONYMOUS_EXPIRATION:3600}
 
 logging:
   level:
-    br.com.fiap.wellora: INFO
-    org.springframework.security: WARN
+    '[br.com.fiap.wellora]': INFO
+    '[org.springframework.security]': WARN
   pattern:
     console: "%%d{HH:mm:ss.SSS} [%%thread] %%-5level %%logger{36} - %%msg%%n"
 

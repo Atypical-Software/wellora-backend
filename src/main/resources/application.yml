@@ -4,20 +4,23 @@ server:
 spring:
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0}
+      uri: ${MONGODB_URI:mongodb://localhost:27017/wellora}
   application:
     name: wellora-backend
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:dev}
 
 jwt:
-  secret: ${JWT_SECRET:wellora-secret-key-2024}
+  secret: ${JWT_SECRET}
   expiration: ${JWT_EXPIRATION:86400}
+  anonymous:
+    secret: ${JWT_ANONYMOUS_SECRET}
+    expiration: ${JWT_ANONYMOUS_EXPIRATION:3600}
 
 logging:
   level:
-    br.com.fiap.wellora: ${LOG_LEVEL:DEBUG}
-    org.springframework.security: WARN
+    '[br.com.fiap.wellora]': ${LOG_LEVEL:DEBUG}
+    '[org.springframework.security]': WARN
 
 management:
   endpoints:

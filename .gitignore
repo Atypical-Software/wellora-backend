@@ -37,3 +37,8 @@ Thumbs.db
 application-local.yml
 *.log
 temp.txt
+
+# Environment variables
+.env
+.env.local
+.env.production
