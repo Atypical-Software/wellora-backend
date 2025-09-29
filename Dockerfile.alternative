@@ -1,5 +1,5 @@
 # Dockerfile alternativo usando Maven oficial
-FROM maven:3.9.5-openjdk-17-slim as build
+FROM maven:3.9.5-eclipse-temurin-17-alpine as build
 
 # Set working directory
 WORKDIR /app
@@ -22,7 +22,7 @@ RUN mvn clean package -DskipTests && \
     jar tf target/wellora-backend-1.0.0.jar | grep -E "(MANIFEST|BOOT-INF)" || echo "Checking JAR structure..."
 
 # Production stage
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 
 WORKDIR /app
 

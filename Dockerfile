@@ -1,5 +1,5 @@
 # Multi-stage build for optimization
-FROM openjdk:17-jdk-slim as build
+FROM eclipse-temurin:17-jdk-alpine as build
 
 # Set working directory
 WORKDIR /app
@@ -14,7 +14,7 @@ RUN chmod +x ./mvnw && ls -la ./mvnw
 
 # Download dependencies with verbose output
 RUN echo "=== Downloading dependencies ===" && \
-    ./mvnw dependency:go-offline -B -X
+    ./mvnw dependency:go-offline -B
 
 # Copy source code
 COPY src ./src
@@ -27,7 +27,7 @@ RUN echo "=== Files before build ===" && \
 
 # Build the application with verbose output
 RUN echo "=== Starting Maven build ===" && \
-    ./mvnw clean package -DskipTests -X && \
+    ./mvnw clean package -DskipTests && \
     echo "=== Build completed ===" && \
     ls -la target/
 
@@ -50,7 +50,7 @@ RUN echo "=== Verifying JAR ===" && \
     fi
 
 # Production stage
-FROM openjdk:17-jre-slim
+FROM eclipse-temurin:17-jre-alpine
 
 # Set working directory
 WORKDIR /app
