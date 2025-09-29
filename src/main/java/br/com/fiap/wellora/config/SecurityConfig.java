@@ -25,6 +25,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/api/auth/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/anonymous/**")).permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/api/questions/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/health/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/debug/**")).permitAll()
                 .requestMatchers(new AntPathRequestMatcher("/api/relatorio/**")).permitAll()
