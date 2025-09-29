@@ -19,7 +19,7 @@ public class AdminUser {
     @Indexed(unique = true)
     private String email;
 
-    private String passwordHash;
+    private String password;
 
     private String name;
 
@@ -27,7 +27,7 @@ public class AdminUser {
 
     private String role = "ADMIN";
 
-    private boolean active = true;
+    private boolean isActive = true;
 
     private LocalDateTime createdAt;
 
@@ -38,9 +38,9 @@ public class AdminUser {
         this.createdAt = LocalDateTime.now();
     }
 
-    public AdminUser(String email, String passwordHash, String name, String empresaId) {
+    public AdminUser(String email, String password, String name, String empresaId) {
         this.email = email;
-        this.passwordHash = passwordHash;
+        this.password = password;
         this.name = name;
         this.empresaId = empresaId;
         this.createdAt = LocalDateTime.now();
@@ -63,12 +63,12 @@ public class AdminUser {
         this.email = email;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
+    public String getPassword() {
+        return password;
     }
 
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getName() {
@@ -96,11 +96,11 @@ public class AdminUser {
     }
 
     public boolean isActive() {
-        return active;
+        return isActive;
     }
 
-    public void setActive(boolean active) {
-        this.active = active;
+    public void setActive(boolean isActive) {
+        this.isActive = isActive;
     }
 
     public LocalDateTime getCreatedAt() {

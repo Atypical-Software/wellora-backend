@@ -11,6 +11,7 @@ br\com\fiap\wellora\dto\RelatorioAdminResponse$PesquisasInfo.class
 br\com\fiap\wellora\service\JwtService.class
 br\com\fiap\wellora\WelloraBackendApplication.class
 br\com\fiap\wellora\dto\RelatorioAdminResponse.class
+br\com\fiap\wellora\model\DailyQuestionSet.class
 br\com\fiap\wellora\controller\AnonymousAuthController.class
 br\com\fiap\wellora\controller\QuestionController.class
 br\com\fiap\wellora\model\CheckinHumor.class
@@ -28,6 +29,8 @@ br\com\fiap\wellora\dto\AnonymousSessionResponse.class
 br\com\fiap\wellora\config\DataInitializer.class
 br\com\fiap\wellora\service\HumorService.class
 br\com\fiap\wellora\service\QuestionarioService.class
+br\com\fiap\wellora\model\AnonymousSession$ResponseEntry.class
+br\com\fiap\wellora\model\ResponseAnalytics.class
 br\com\fiap\wellora\service\RelatorioService.class
 br\com\fiap\wellora\dto\LoginResponse.class
 br\com\fiap\wellora\model\AdminUser.class

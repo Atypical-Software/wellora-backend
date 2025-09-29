@@ -8,56 +8,56 @@ import java.util.List;
 /**
  * Pool de perguntas para rotação diária
  */
-@Document(collection = "questions_pool")
+@Document(collection = "questions")
 public class Question {
 
     @Id
-    private String questionId;
+    private String id;
 
-    private String texto;
-    private String categoria;
-    private String tipo;
-    private List<String> opcoes;
-    private boolean ativa;
-    private int peso;
-    private LocalDateTime criadaEm;
+    private String text;
+    private String category;
+    private String type;
+    private List<String> options;
+    private boolean isActive;
+    private int priority;
+    private LocalDateTime createdAt;
 
     // Construtores
     public Question() {}
 
-    public Question(String questionId, String texto, String categoria, String tipo, List<String> opcoes) {
-        this.questionId = questionId;
-        this.texto = texto;
-        this.categoria = categoria;
-        this.tipo = tipo;
-        this.opcoes = opcoes;
-        this.ativa = true;
-        this.peso = 1;
-        this.criadaEm = LocalDateTime.now();
+    public Question(String id, String text, String category, String type, List<String> options) {
+        this.id = id;
+        this.text = text;
+        this.category = category;
+        this.type = type;
+        this.options = options;
+        this.isActive = true;
+        this.priority = 1;
+        this.createdAt = LocalDateTime.now();
     }
 
     // Getters e Setters
-    public String getQuestionId() { return questionId; }
-    public void setQuestionId(String questionId) { this.questionId = questionId; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
-    public String getTexto() { return texto; }
-    public void setTexto(String texto) { this.texto = texto; }
+    public String getText() { return text; }
+    public void setText(String text) { this.text = text; }
 
-    public String getCategoria() { return categoria; }
-    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public String getType() { return type; }
+    public void setType(String type) { this.type = type; }
 
-    public List<String> getOpcoes() { return opcoes; }
-    public void setOpcoes(List<String> opcoes) { this.opcoes = opcoes; }
+    public List<String> getOptions() { return options; }
+    public void setOptions(List<String> options) { this.options = options; }
 
-    public boolean isAtiva() { return ativa; }
-    public void setAtiva(boolean ativa) { this.ativa = ativa; }
+    public boolean isActive() { return isActive; }
+    public void setActive(boolean isActive) { this.isActive = isActive; }
 
-    public int getPeso() { return peso; }
-    public void setPeso(int peso) { this.peso = peso; }
+    public int getPriority() { return priority; }
+    public void setPriority(int priority) { this.priority = priority; }
 
-    public LocalDateTime getCriadaEm() { return criadaEm; }
-    public void setCriadaEm(LocalDateTime criadaEm) { this.criadaEm = criadaEm; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

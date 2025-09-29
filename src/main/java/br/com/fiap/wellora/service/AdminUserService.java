@@ -27,7 +27,7 @@ public class AdminUserService {
         Optional<AdminUser> adminOpt = adminUserRepository.findByEmailAndActiveTrue(email);
         if (adminOpt.isPresent()) {
             AdminUser admin = adminOpt.get();
-            if (passwordEncoder.matches(password, admin.getPasswordHash())) {
+            if (passwordEncoder.matches(password, admin.getPassword())) {
                 // Atualizar ultimo login
                 admin.setLastLogin(LocalDateTime.now());
                 adminUserRepository.save(admin);

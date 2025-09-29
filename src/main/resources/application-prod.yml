@@ -1,12 +1,12 @@
 server:
-  port: ${PORT:8080}
+  port: ${PORT:10000}
 
 spring:
   profiles:
     active: prod
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/wellora}
+      uri: ${MONGODB_URI}
   application:
     name: wellora-backend
 

@@ -4,7 +4,7 @@ server:
 spring:
   data:
     mongodb:
-      uri: ${MONGODB_URI:mongodb://localhost:27017/wellora}
+      uri: ${MONGODB_URI:mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0}
   application:
     name: wellora-backend
   profiles:

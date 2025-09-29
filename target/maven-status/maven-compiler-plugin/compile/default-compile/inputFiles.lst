@@ -26,6 +26,7 @@ C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\m
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\service\AnonymousSessionService.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\controller\QuestionarioController.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\repository\CheckinHumorRepository.java
+C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\model\DailyQuestionSet.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\model\AnonymousSession.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\dto\LoginRequest.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\dto\ValidationResponse.java
@@ -35,4 +36,5 @@ C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\m
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\model\CheckinHumor.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\dto\CheckinRequest.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\controller\QuestionController.java
+C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\model\ResponseAnalytics.java
 C:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\WelloraBackendApplication.java
