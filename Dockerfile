@@ -30,7 +30,11 @@ CMD ["sh", "-c", "java \
      -Xmx512m -Xms256m \
      -Djdk.tls.client.protocols=TLSv1.2 \
      -Dhttps.protocols=TLSv1.2 \
+     -Dcom.mongodb.ssl.sslInvalidHostNameAllowed=false \
+     -Dcom.mongodb.ssl.enabled=true \
      -Djavax.net.ssl.trustStore=/opt/java/openjdk/lib/security/cacerts \
      -Djavax.net.ssl.trustStorePassword=changeit \
      -Djavax.net.ssl.trustStoreType=JKS \
+     -Djdk.tls.useExtendedMasterSecret=false \
+     -Djdk.tls.maxHandshakeMessageSize=32768 \
      -jar app.jar"]

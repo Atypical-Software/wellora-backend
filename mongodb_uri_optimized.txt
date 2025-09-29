@@ -1,10 +1,13 @@
-# MongoDB URI otimizada para Render - Baseada na documentação oficial
-mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0&tls=true&tlsAllowInvalidHostnames=false
+# MongoDB URI otimizada para Render - Solução SSL para JDK 17 + MongoDB Atlas
+mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0
 
-# Documentação oficial MongoDB: https://www.mongodb.com/pt-br/docs/drivers/java/sync/current/get-started/
-# Problema TLS 1.3 documentado: JDK 17.0.16 tem problemas conhecidos com TLS 1.3
-# Solução: Forçar uso de TLS 1.2 através de parâmetros JVM
+# SOLUÇÃO IMPLEMENTADA:
+# 1. Removido parâmetros TLS da URI (conflitam com configuração Java)
+# 2. Adicionado MongoConfigProduction.java com SSL customizado
+# 3. JVM configurado para TLS 1.2 forçado
+# 4. SSLContext customizado que funciona com MongoDB Atlas
 
-# Parâmetros JVM necessários:
-# -Djdk.tls.client.protocols=TLSv1.2
-# -Dhttps.protocols=TLSv1.2
+# Baseado em:
+# - Documentação MongoDB: https://www.mongodb.com/docs/drivers/java/sync/current/get-started/
+# - Issue conhecida: JDK 17.0.16 + TLS 1.3 + MongoDB Atlas
+# - Solução: SSL customizado via MongoClientSettings
