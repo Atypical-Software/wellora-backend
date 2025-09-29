@@ -12,10 +12,8 @@ import org.springframework.stereotype.Service;
 import br.com.fiap.wellora.dto.RelatorioAdminResponse;
 import br.com.fiap.wellora.model.CheckinHumor;
 import br.com.fiap.wellora.model.QuestionarioPsicossocial;
-import br.com.fiap.wellora.model.ResponseAnalytics;
 import br.com.fiap.wellora.repository.CheckinHumorRepository;
 import br.com.fiap.wellora.repository.QuestionarioRepository;
-import br.com.fiap.wellora.repository.ResponseAnalyticsRepository;
 
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Query;
@@ -30,9 +28,6 @@ public class RelatorioService {
     private QuestionarioRepository questionarioRepository;
 
     @Autowired
-    private ResponseAnalyticsRepository responseAnalyticsRepository;
-
-    @Autowired
     private MongoTemplate mongoTemplate;
 
     @Autowired
@@ -42,42 +37,24 @@ public class RelatorioService {
         RelatorioAdminResponse relatorio = new RelatorioAdminResponse();
         relatorio.setTitulo("Relatório de Bem-estar Organizacional");
 
-        // Buscar dados REAIS das coleções disponíveis
-        List<ResponseAnalytics> analytics = responseAnalyticsRepository.findAllByOrderByCreatedAtDesc();
+        // Buscar dados REAIS da collection anonymous_responses onde estão sendo salvos
         long countAnonymousResponses = mongoTemplate.count(new Query(), "anonymous_responses");
         
-        // Dados de pesquisas baseados nos dados REAIS do MongoDB
-        int totalRespostas = 0;
-        int totalQuestionarios = 0;
+        // Dados de pesquisas baseados nos dados REAIS do anonymous_responses
+        int totalRespostas = (int) countAnonymousResponses;
+        int totalQuestionarios = totalRespostas; // Cada resposta é um questionário respondido
         
-        // Priorizar responseAnalytics se tiver dados (como você mostrou na imagem)
-        if (!analytics.isEmpty()) {
-            totalRespostas = analytics.stream()
-                    .mapToInt(ResponseAnalytics::getTotalResponses)
-                    .sum();
-            totalQuestionarios = analytics.size();
-            
-            // Usar dados reais de responseAnalytics
-            int meta = totalRespostas + 15; // Meta um pouco maior
-            int porcentagemConclusao = totalRespostas > 0 ? (totalRespostas * 100) / meta : 0;
+        if (totalRespostas > 0) {
+            // Usar dados reais de anonymous_responses
+            int meta = totalRespostas + 10; // Meta um pouco maior
+            int porcentagemConclusao = (totalRespostas * 100) / meta;
             RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
                 totalQuestionarios, meta, porcentagemConclusao);
             relatorio.setPesquisas(pesquisas);
-        } else if (countAnonymousResponses > 0) {
-            // Usar dados de anonymous_responses se existirem
-            totalRespostas = (int) countAnonymousResponses;
-            int meta = totalRespostas + 10;
-            int porcentagemConclusao = totalRespostas > 0 ? (totalRespostas * 100) / meta : 0;
-            RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
-                totalRespostas, meta, porcentagemConclusao);
-            relatorio.setPesquisas(pesquisas);
         } else {
-            // Fallback para dados antigos de questionarios
-            List<QuestionarioPsicossocial> questionarios = questionarioRepository.findAll();
-            int totalQuestionariosAntigos = questionarios.size();
+            // Fallback se não houver dados
             RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
-                totalQuestionariosAntigos, totalQuestionariosAntigos + 10, 
-                totalQuestionariosAntigos > 0 ? (totalQuestionariosAntigos * 100) / (totalQuestionariosAntigos + 10) : 0);
+                0, 10, 0);
             relatorio.setPesquisas(pesquisas);
         }
 
