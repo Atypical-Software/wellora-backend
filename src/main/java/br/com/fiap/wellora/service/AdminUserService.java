@@ -25,7 +25,7 @@ public class AdminUserService {
      * Autentica admin por email e senha
      */
     public Optional<AdminUser> authenticate(String email, String password) {
-        Optional<AdminUser> adminOpt = adminUserRepository.findByEmailAndActiveTrue(email);
+        Optional<AdminUser> adminOpt = adminUserRepository.findByEmailAndIsActiveTrue(email);
         if (adminOpt.isPresent()) {
             AdminUser admin = adminOpt.get();
             if (passwordEncoder.matches(password, admin.getPassword())) {

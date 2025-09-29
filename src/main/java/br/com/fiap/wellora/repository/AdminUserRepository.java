@@ -21,7 +21,7 @@ public interface AdminUserRepository extends MongoRepository<AdminUser, String> 
     /**
      * Busca admin por email e que esteja ativo
      */
-    Optional<AdminUser> findByEmailAndActiveTrue(String email);
+    Optional<AdminUser> findByEmailAndIsActiveTrue(String email);
 
     /**
      * Verifica se existe admin com o email

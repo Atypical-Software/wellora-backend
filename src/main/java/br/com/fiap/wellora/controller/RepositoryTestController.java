@@ -45,9 +45,9 @@ public class RepositoryTestController {
                 response.put("findByEmail_active", byEmail.get().isActive());
             }
             
-            // 2. findByEmailAndActiveTrue
-            Optional<AdminUser> byEmailActive = adminUserRepository.findByEmailAndActiveTrue(email);
-            response.put("findByEmailAndActiveTrue", byEmailActive.isPresent());
+            // 2. findByEmailAndIsActiveTrue
+            Optional<AdminUser> byEmailActive = adminUserRepository.findByEmailAndIsActiveTrue(email);
+            response.put("findByEmailAndIsActiveTrue", byEmailActive.isPresent());
             
             // 3. AdminUserService.authenticate
             try {
