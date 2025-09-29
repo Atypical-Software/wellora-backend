@@ -1,0 +1,200 @@
+ESPECIFICAÇÃO COMPLETA DA API PARA O FRONTEND KOTLIN
+==================================================
+
+🎯 ENDPOINT PRINCIPAL
+---------------------
+URL: https://wellora-backend-1.onrender.com/api/relatorio/admin
+Método: GET
+Headers necessários:
+- Authorization: Bearer {JWT_TOKEN}
+- Content-Type: application/json
+
+🔐 COMO OBTER O TOKEN JWT
+-------------------------
+URL: https://wellora-backend-1.onrender.com/api/auth/admin-login
+Método: POST
+Headers:
+- Content-Type: application/json
+
+Body (JSON):
+{
+  "email": "admin@wellora.com",
+  "password": "admin123"
+}
+
+Resposta:
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9...",
+  "role": "ADMIN",
+  "name": "Administrador Principal",
+  "empresaId": null
+}
+
+📋 ESTRUTURA JSON RETORNADA PELA API
+------------------------------------
+{
+  "titulo": "Relatório de Bem-estar Organizacional",
+  "pesquisas": {
+    "concluidas": 2,
+    "total": 12,
+    "porcentagem": 16
+  },
+  "sentimentos": [
+    {
+      "tipo": "feliz",
+      "quantidade": 2,
+      "porcentagem": 100
+    }
+  ],
+  "colaboradoresComCansaco": {
+    "periodo": "Últimos 30 dias",
+    "porcentagemCansado": 0,
+    "porcentagemOk": 100
+  }
+}
+
+🔧 CLASSES KOTLIN PARA MAPEAMENTO
+----------------------------------
+data class Relatorio(
+    val titulo: String,
+    val pesquisas: Pesquisas,
+    val sentimentos: List<SentimentoApi>,
+    val colaboradoresComCansaco: ColaboradoresComCansaco
+)
+
+data class Pesquisas(
+    val concluidas: Int,    // Número de pesquisas respondidas
+    val total: Int,         // Meta total de pesquisas
+    val porcentagem: Int    // Percentual de conclusão (0-100)
+)
+
+data class SentimentoApi(
+    val tipo: String,       // "feliz", "neutro", "cansado"
+    val quantidade: Int,    // Número de pessoas com esse sentimento
+    val porcentagem: Int    // Porcentagem do total (0-100)
+)
+
+data class ColaboradoresComCansaco(
+    val periodo: String,           // "Últimos 30 dias"
+    val porcentagemCansado: Int,   // % de pessoas cansadas (0-100)
+    val porcentagemOk: Int         // % de pessoas OK (0-100)
+)
+
+📱 EXEMPLO DE CONSUMO NO KOTLIN
+-------------------------------
+// 1. Login para obter token
+suspend fun adminLogin(): String? {
+    val url = URL("https://wellora-backend-1.onrender.com/api/auth/admin-login")
+    val connection = url.openConnection() as HttpURLConnection
+    connection.requestMethod = "POST"
+    connection.setRequestProperty("Content-Type", "application/json")
+    connection.doOutput = true
+    
+    val requestBody = JSONObject().apply {
+        put("email", "admin@wellora.com")
+        put("password", "admin123")
+    }
+    
+    connection.outputStream.use { it.write(requestBody.toString().toByteArray()) }
+    
+    if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val json = JSONObject(response)
+        return json.getString("token")
+    }
+    return null
+}
+
+// 2. Buscar relatório com token
+suspend fun getAdminReport(token: String): Relatorio? {
+    val url = URL("https://wellora-backend-1.onrender.com/api/relatorio/admin")
+    val connection = url.openConnection() as HttpURLConnection
+    connection.requestMethod = "GET"
+    connection.setRequestProperty("Content-Type", "application/json")
+    connection.setRequestProperty("Authorization", "Bearer $token")
+    
+    if (connection.responseCode == HttpURLConnection.HTTP_OK) {
+        val response = connection.inputStream.bufferedReader().use { it.readText() }
+        val json = JSONObject(response)
+        
+        // Converter para objetos Kotlin
+        val pesquisasData = json.getJSONObject("pesquisas")
+        val pesquisas = Pesquisas(
+            concluidas = pesquisasData.getInt("concluidas"),
+            total = pesquisasData.getInt("total"),
+            porcentagem = pesquisasData.getInt("porcentagem")
+        )
+        
+        val sentimentosArray = json.getJSONArray("sentimentos")
+        val sentimentos = mutableListOf<SentimentoApi>()
+        for (i in 0 until sentimentosArray.length()) {
+            val sentimentoJson = sentimentosArray.getJSONObject(i)
+            sentimentos.add(
+                SentimentoApi(
+                    tipo = sentimentoJson.getString("tipo"),
+                    quantidade = sentimentoJson.getInt("quantidade"),
+                    porcentagem = sentimentoJson.getInt("porcentagem")
+                )
+            )
+        }
+        
+        val colaboradoresData = json.getJSONObject("colaboradoresComCansaco")
+        val colaboradores = ColaboradoresComCansaco(
+            periodo = colaboradoresData.getString("periodo"),
+            porcentagemCansado = colaboradoresData.getInt("porcentagemCansado"),
+            porcentagemOk = colaboradoresData.getInt("porcentagemOk")
+        )
+        
+        return Relatorio(
+            titulo = json.getString("titulo"),
+            pesquisas = pesquisas,
+            sentimentos = sentimentos,
+            colaboradoresComCansaco = colaboradores
+        )
+    }
+    return null
+}
+
+🧪 TESTE RÁPIDO COM CURL
+------------------------
+# 1. Fazer login
+curl -X POST "https://wellora-backend-1.onrender.com/api/auth/admin-login" \
+     -H "Content-Type: application/json" \
+     -d '{"email":"admin@wellora.com","password":"admin123"}'
+
+# 2. Usar o token retornado
+curl -H "Authorization: Bearer SEU_TOKEN_AQUI" \
+     "https://wellora-backend-1.onrender.com/api/relatorio/admin"
+
+🔍 DADOS REAIS ATUALMENTE NA API
+--------------------------------
+- pesquisas.concluidas: 2 (respostas enviadas)
+- pesquisas.total: 12 (meta calculada)
+- pesquisas.porcentagem: 16% (2/12 = 16%)
+- sentimentos: 100% feliz (baseado em análise real das respostas "Muito bem", "Satisfeito", etc.)
+- colaboradoresComCansaco: 0% cansado, 100% OK
+
+🚨 PONTOS IMPORTANTES
+--------------------
+1. O token JWT expira em 1 hora (3600 segundos)
+2. Todos os dados são REAIS, baseados nas pesquisas respondidas
+3. Os sentimentos são analisados por palavra-chave das respostas
+4. A API está hospedada no Render (pode demorar ~30s para "acordar" se inativa)
+5. Headers de Authorization são obrigatórios para /api/relatorio/admin
+
+💡 DICAS DE IMPLEMENTAÇÃO
+------------------------
+1. Sempre verificar connection.responseCode antes de processar resposta
+2. Implementar timeout (connectTimeout e readTimeout)
+3. Tratar erros HTTP 401 (token inválido/expirado)
+4. Implementar retry para primeira requisição (Render cold start)
+5. Cache do token localmente até expirar
+
+✅ STATUS DA API
+---------------
+- API funcionando 100% ✅
+- Dados reais sendo retornados ✅
+- Análise de sentimento implementada ✅
+- Logs detalhados para debug ✅
+
+ÚLTIMA ATUALIZAÇÃO: 29 de setembro de 2025

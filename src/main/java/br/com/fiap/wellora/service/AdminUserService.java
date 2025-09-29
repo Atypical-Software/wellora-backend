@@ -25,15 +25,26 @@ public class AdminUserService {
      * Autentica admin por email e senha
      */
     public Optional<AdminUser> authenticate(String email, String password) {
+        System.out.println("🔍 DEBUG AdminUserService: Tentando autenticar email: " + email);
+        
         Optional<AdminUser> adminOpt = adminUserRepository.findByEmailAndIsActiveTrue(email);
+        
         if (adminOpt.isPresent()) {
             AdminUser admin = adminOpt.get();
+            System.out.println("🔍 DEBUG AdminUserService: Admin encontrado: " + admin.getName());
+            System.out.println("🔍 DEBUG AdminUserService: Admin ativo: " + admin.isActive());
+            
             if (passwordEncoder.matches(password, admin.getPassword())) {
+                System.out.println("✅ DEBUG AdminUserService: Senha correta! Login bem-sucedido.");
                 // Atualizar ultimo login
                 admin.setLastLogin(LocalDateTime.now());
                 adminUserRepository.save(admin);
                 return Optional.of(admin);
+            } else {
+                System.out.println("❌ DEBUG AdminUserService: Senha incorreta!");
             }
+        } else {
+            System.out.println("❌ DEBUG AdminUserService: Admin não encontrado ou inativo!");
         }
         return Optional.empty();
     }

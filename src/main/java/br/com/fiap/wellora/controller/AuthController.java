@@ -60,10 +60,16 @@ public class AuthController {
             String email = request.get("email");
             String password = request.get("password");
 
+            System.out.println("🔍 DEBUG AuthController: ========== ADMIN LOGIN ==========");
+            System.out.println("🔍 DEBUG AuthController: Email recebido: " + email);
+            System.out.println("🔍 DEBUG AuthController: Password length: " + (password != null ? password.length() : "null"));
+
             Optional<AdminUser> adminOpt = adminUserService.authenticate(email, password);
 
             if (adminOpt.isPresent()) {
                 AdminUser admin = adminOpt.get();
+
+                System.out.println("✅ DEBUG AuthController: Login bem-sucedido para: " + admin.getName());
 
                 // Gerar token JWT para admin
                 String token = jwtService.generateToken(admin.getEmail());
@@ -74,12 +80,20 @@ public class AuthController {
                 response.put("name", admin.getName());
                 response.put("empresaId", admin.getEmpresaId());
 
+                System.out.println("✅ DEBUG AuthController: Token gerado: " + token.substring(0, 20) + "...");
+                System.out.println("🔍 DEBUG AuthController: ========== FIM ADMIN LOGIN ==========");
+
                 return ResponseEntity.ok(response);
             } else {
+                System.out.println("❌ DEBUG AuthController: Login falhou - credenciais inválidas");
+                System.out.println("🔍 DEBUG AuthController: ========== FIM ADMIN LOGIN ==========");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
         } catch (Exception e) {
+            System.err.println("❌ DEBUG AuthController: Erro no login admin: " + e.getMessage());
+            e.printStackTrace();
+            System.out.println("🔍 DEBUG AuthController: ========== FIM ADMIN LOGIN ==========");
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
