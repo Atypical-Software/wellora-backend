@@ -28,6 +28,7 @@ br\com\fiap\wellora\model\LogAuditoria.class
 br\com\fiap\wellora\dto\AnonymousSessionResponse.class
 br\com\fiap\wellora\config\DataInitializer.class
 br\com\fiap\wellora\service\HumorService.class
+br\com\fiap\wellora\config\ConnectivityChecker.class
 br\com\fiap\wellora\service\QuestionarioService.class
 br\com\fiap\wellora\model\AnonymousSession$ResponseEntry.class
 br\com\fiap\wellora\model\ResponseAnalytics.class
@@ -40,6 +41,5 @@ br\com\fiap\wellora\dto\ValidationResponse.class
 br\com\fiap\wellora\repository\AdminUserRepository.class
 br\com\fiap\wellora\repository\CheckinHumorRepository.class
 br\com\fiap\wellora\dto\LoginRequest.class
-br\com\fiap\wellora\config\MongoConfig.class
 br\com\fiap\wellora\controller\QuestionarioController.class
 br\com\fiap\wellora\controller\RelatorioController.class

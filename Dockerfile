@@ -35,7 +35,12 @@ ENV SPRING_PROFILES_ACTIVE=prod
 # Adicionar configurações SSL para MongoDB
 CMD ["java", \
      "-Dcom.mongodb.useJSSE=false", \
-     "-Djava.net.useSystemProxies=true", \
+     "-Djava.security.useSystemProxies=true", \
      "-Djavax.net.ssl.trustStore=/opt/java/openjdk/lib/security/cacerts", \
      "-Djavax.net.ssl.trustStorePassword=changeit", \
+     "-Djavax.net.ssl.keyStore=/opt/java/openjdk/lib/security/cacerts", \
+     "-Djavax.net.ssl.keyStorePassword=changeit", \
+     "-Djdk.tls.useExtendedMasterSecret=false", \
+     "-Dhttps.protocols=TLSv1.2,TLSv1.3", \
+     "-Djdk.tls.client.protocols=TLSv1.2,TLSv1.3", \
      "-jar", "app.jar"]

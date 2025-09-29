@@ -16,9 +16,32 @@ public class DataInitializer implements CommandLineRunner {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    
+    @Autowired
+    private ConnectivityChecker connectivityChecker;
 
     @Override
     public void run(String... args) throws Exception {
+        // Fazer verificação de conectividade primeiro
+        connectivityChecker.checkConnectivity();
+        
+        try {
+            // Tentar conectar e inicializar dados
+            initializeDefaultData();
+        } catch (Exception e) {
+            System.err.println("=== ERRO AO INICIALIZAR DADOS ===");
+            System.err.println("Erro: " + e.getMessage());
+            System.err.println("Tipo: " + e.getClass().getSimpleName());
+            if (e.getCause() != null) {
+                System.err.println("Causa: " + e.getCause().getMessage());
+            }
+            System.err.println("A aplicação continuará sem os dados iniciais.");
+            System.err.println("===================================");
+            // Não propagar a exceção para não falhar o startup da aplicação
+        }
+    }
+    
+    private void initializeDefaultData() {
         // Criar usuário admin padrão se não existir
         if (!usuarioRepository.existsByEmail("admin@wellora.com")) {
             Usuario admin = new Usuario();
