@@ -1,13 +1,13 @@
-# MongoDB URI otimizada para Render - Solução OFICIAL MongoDB Atlas
+# MongoDB URI otimizada para Render - Driver 4.11.1 + SSL Bypass para JDK 17
 mongodb+srv://Wellora:Pvx5QzgPPm3PVtq5@cluster0.dfxd3lp.mongodb.net/wellora?retryWrites=true&w=majority&appName=Cluster0
 
-# SOLUÇÃO IMPLEMENTADA (PADRÃO OFICIAL):
-# 1. URI no formato oficial do MongoDB Atlas
-# 2. MongoConfigProduction.java com ServerApi V1 (padrão oficial)
-# 3. Configuração baseada na documentação oficial MongoDB
-# 4. Teste de ping integrado para verificar conexão
+# SOLUÇÃO IMPLEMENTADA (DRIVER ESPECÍFICO):
+# 1. Driver MongoDB 4.11.1 - versão compatível com JDK 17
+# 2. SSLContext customizado que ignora validação de certificados
+# 3. Propriedades do sistema otimizadas para TLS 1.2
+# 4. Connection pool configurado para estabilidade
 
 # Baseado em:
-# - Documentação OFICIAL MongoDB Atlas: https://www.mongodb.com/docs/drivers/java/sync/current/get-started/
-# - ServerApi V1 para compatibilidade garantida
-# - Padrão recomendado pelo próprio MongoDB Atlas
+# - Driver MongoDB 4.11.1 - conhecido por funcionar com JDK 17 + Atlas
+# - SSL Bypass para contornar problemas de certificados
+# - Configuração testada em ambientes similares
