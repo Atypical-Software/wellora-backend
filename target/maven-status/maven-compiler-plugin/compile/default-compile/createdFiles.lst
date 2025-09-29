@@ -40,5 +40,6 @@ br\com\fiap\wellora\dto\ValidationResponse.class
 br\com\fiap\wellora\repository\AdminUserRepository.class
 br\com\fiap\wellora\repository\CheckinHumorRepository.class
 br\com\fiap\wellora\dto\LoginRequest.class
+br\com\fiap\wellora\config\MongoConfig.class
 br\com\fiap\wellora\controller\QuestionarioController.class
 br\com\fiap\wellora\controller\RelatorioController.class

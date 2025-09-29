@@ -18,6 +18,9 @@ FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 COPY --from=build /app/target/wellora-backend-1.0.0.jar app.jar
 
+# Instalar certificados SSL para conexões seguras
+RUN apk add --no-cache ca-certificates
+
 # Verificação final
 RUN echo "=== JAR final ===" && \
     ls -la app.jar && \
@@ -29,4 +32,10 @@ USER spring:spring
 EXPOSE 8080
 ENV SPRING_PROFILES_ACTIVE=prod
 
-CMD ["java", "-jar", "app.jar"]
+# Adicionar configurações SSL para MongoDB
+CMD ["java", \
+     "-Dcom.mongodb.useJSSE=false", \
+     "-Djava.net.useSystemProxies=true", \
+     "-Djavax.net.ssl.trustStore=/opt/java/openjdk/lib/security/cacerts", \
+     "-Djavax.net.ssl.trustStorePassword=changeit", \
+     "-jar", "app.jar"]
