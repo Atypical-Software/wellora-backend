@@ -20,24 +20,17 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    @Value("${jwt.secret}")
+    @Value("${jwt.secret:mySecretKey123456789012345678901234567890}")
     private String secretKey;
 
-    @Value("${jwt.expiration:86400}") // 24 horas em segundos
+    @Value("${jwt.expiration:86400000}") // 24 horas
     private long jwtExpiration;
 
-    @Value("${jwt.anonymous.secret}")
-    private String anonymousSecretKey;
-
-    @Value("${jwt.anonymous.expiration:3600}") // 1 hora em segundos para tokens anônimos
+    @Value("${jwt.anonymous.expiration:3600000}") // 1 hora para tokens anônimos
     private long anonymousExpiration;
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(secretKey.getBytes());
-    }
-
-    private SecretKey getAnonymousSigningKey() {
-        return Keys.hmacShaKeyFor(anonymousSecretKey.getBytes());
     }
 
     /**
@@ -52,7 +45,7 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + (jwtExpiration * 1000)))
+                .setExpiration(new Date(System.currentTimeMillis() + jwtExpiration))
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
@@ -70,8 +63,8 @@ public class JwtService {
                 .setClaims(claims)
                 .setSubject(sessionId)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + (anonymousExpiration * 1000)))
-                .signWith(getAnonymousSigningKey(), SignatureAlgorithm.HS256)
+                .setExpiration(new Date(System.currentTimeMillis() + anonymousExpiration))
+                .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
@@ -99,7 +92,7 @@ public class JwtService {
     public boolean isValidAnonymousToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getAnonymousSigningKey())
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -134,7 +127,7 @@ public class JwtService {
     public String getSessionIdFromToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getAnonymousSigningKey())
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
@@ -151,7 +144,7 @@ public class JwtService {
     public String getEmpresaIdFromToken(String token) {
         try {
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(getAnonymousSigningKey())
+                    .setSigningKey(getSigningKey())
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
