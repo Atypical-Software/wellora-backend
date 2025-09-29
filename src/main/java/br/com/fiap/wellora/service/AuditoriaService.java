@@ -1,12 +1,13 @@
 package br.com.fiap.wellora.service;
 
-import br.com.fiap.wellora.model.LogAuditoria;
-import br.com.fiap.wellora.repository.LogAuditoriaRepository;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
-import java.util.HashMap;
+import br.com.fiap.wellora.model.LogAuditoria;
+import br.com.fiap.wellora.repository.LogAuditoriaRepository;
 
 @Service
 public class AuditoriaService {

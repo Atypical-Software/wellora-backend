@@ -1,11 +1,12 @@
 package br.com.fiap.wellora.model;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import java.time.LocalDateTime;
-import java.util.Map;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * Modelo para sessões anônimas - substitui o sistema de usuários
