@@ -42,28 +42,34 @@ public class RelatorioService {
         RelatorioAdminResponse relatorio = new RelatorioAdminResponse();
         relatorio.setTitulo("Relatório de Bem-estar Organizacional");
 
-        // Buscar dados REAIS da coleção anonymous_responses (onde são salvos os dados das pesquisas)
+        // Buscar dados REAIS das coleções disponíveis
         List<ResponseAnalytics> analytics = responseAnalyticsRepository.findAllByOrderByCreatedAtDesc();
         long countAnonymousResponses = mongoTemplate.count(new Query(), "anonymous_responses");
         
         // Dados de pesquisas baseados nos dados REAIS do MongoDB
-        int totalRespostas = (int) countAnonymousResponses;
-        int totalQuestionarios = analytics.size();
+        int totalRespostas = 0;
+        int totalQuestionarios = 0;
         
-        // Priorizar dados de anonymous_responses se existirem
-        if (countAnonymousResponses > 0) {
-            // Usar dados reais das pesquisas anônimas
-            int meta = totalRespostas + 10; // Meta um pouco maior que o atual
+        // Priorizar responseAnalytics se tiver dados (como você mostrou na imagem)
+        if (!analytics.isEmpty()) {
+            totalRespostas = analytics.stream()
+                    .mapToInt(ResponseAnalytics::getTotalResponses)
+                    .sum();
+            totalQuestionarios = analytics.size();
+            
+            // Usar dados reais de responseAnalytics
+            int meta = totalRespostas + 15; // Meta um pouco maior
+            int porcentagemConclusao = totalRespostas > 0 ? (totalRespostas * 100) / meta : 0;
+            RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
+                totalQuestionarios, meta, porcentagemConclusao);
+            relatorio.setPesquisas(pesquisas);
+        } else if (countAnonymousResponses > 0) {
+            // Usar dados de anonymous_responses se existirem
+            totalRespostas = (int) countAnonymousResponses;
+            int meta = totalRespostas + 10;
             int porcentagemConclusao = totalRespostas > 0 ? (totalRespostas * 100) / meta : 0;
             RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
                 totalRespostas, meta, porcentagemConclusao);
-            relatorio.setPesquisas(pesquisas);
-        } else if (totalQuestionarios > 0) {
-            // Fallback para responseAnalytics se existir
-            int meta = totalQuestionarios + 5;
-            int porcentagemConclusao = (totalQuestionarios * 100) / meta;
-            RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
-                totalQuestionarios, meta, porcentagemConclusao);
             relatorio.setPesquisas(pesquisas);
         } else {
             // Fallback para dados antigos de questionarios

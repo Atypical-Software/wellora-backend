@@ -98,18 +98,29 @@ public class QuestionController {
             @RequestBody Map<String, Object> responses) {
 
         try {
+            System.out.println("🔍 DEBUG: Recebendo submissão de respostas...");
+            System.out.println("🔍 DEBUG: AuthHeader: " + authHeader);
+            System.out.println("🔍 DEBUG: Responses: " + responses);
+            
             // Validar token anônimo
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                System.out.println("❌ DEBUG: AuthHeader inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
             String token = authHeader.substring(7);
+            System.out.println("🔍 DEBUG: Token extraído: " + token.substring(0, 20) + "...");
+            
             if (!jwtService.isValidAnonymousToken(token)) {
+                System.out.println("❌ DEBUG: Token anônimo inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
             String sessionId = jwtService.getSessionIdFromToken(token);
             String empresaId = jwtService.getEmpresaIdFromToken(token);
+            
+            System.out.println("🔍 DEBUG: SessionId: " + sessionId);
+            System.out.println("🔍 DEBUG: EmpresaId: " + empresaId);
 
             // Criar documento de resposta anônima
             Map<String, Object> responseDocument = new HashMap<>();
@@ -119,8 +130,12 @@ public class QuestionController {
             responseDocument.put("submittedAt", java.time.Instant.now());
             responseDocument.put("date", LocalDate.now().toString());
 
+            System.out.println("🔍 DEBUG: Documento a salvar: " + responseDocument);
+
             // Salvar no MongoDB
             mongoTemplate.save(responseDocument, "anonymous_responses");
+            
+            System.out.println("✅ DEBUG: Documento salvo com sucesso em anonymous_responses!");
 
             Map<String, String> result = new HashMap<>();
             result.put("status", "success");
@@ -129,9 +144,12 @@ public class QuestionController {
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
+            System.err.println("❌ DEBUG: Erro ao salvar respostas: " + e.getMessage());
+            e.printStackTrace();
+            
             Map<String, String> result = new HashMap<>();
             result.put("status", "error");
-            result.put("message", "Erro ao enviar respostas");
+            result.put("message", "Erro ao enviar respostas: " + e.getMessage());
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
