@@ -7,15 +7,13 @@ spring:
       uri: ${MONGODB_URI:mongodb://localhost:27017/wellora}
   application:
     name: wellora-backend
-  profiles:
-    active: ${SPRING_PROFILES_ACTIVE:prod}
 
 jwt:
   secret: ${JWT_SECRET:mySecretKeyForDevelopmentOnlyNotForProduction123456789}
   expiration: ${JWT_EXPIRATION:86400}
   anonymous:
     secret: ${JWT_ANONYMOUS_SECRET:myAnonymousSecretKeyForDevelopmentOnly123456789}
-    expiration: ${JWT_ANONYMOUS_EXPIRATION:3600}
+    expiration: ${JWT_ANONYMOUS_EXPIRATION:3600000}
 
 logging:
   level:
