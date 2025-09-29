@@ -10,7 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
  * Modelo para usuarios administradores
  * Separado do sistema anonimo para manter controle de acesso
  */
-@Document(collection = "admin_users")
+@Document(collection = "adminUsers")
 public class AdminUser {
 
     @Id
