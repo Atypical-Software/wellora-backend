@@ -20,6 +20,7 @@ c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\r
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\service\JwtService.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\service\AuthService.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\service\RelatorioService.java
+c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\controller\HealthController.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\repository\UsuarioRepository.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\controller\AnonymousReportsController.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\repository\LogAuditoriaRepository.java
@@ -31,6 +32,7 @@ c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\m
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\model\AnonymousSession.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\dto\LoginRequest.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\dto\ValidationResponse.java
+c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\config\ProdMongoConfig.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\model\Usuario.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\controller\AuthController.java
 c:\Users\rcalmeida\Downloads\wellora-backend\src\main\java\br\com\fiap\wellora\model\Question.java
