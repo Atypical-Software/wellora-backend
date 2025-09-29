@@ -22,9 +22,9 @@ public class MongoConfigProduction {
     @Bean
     public MongoClient mongoClient() {
         try {
-            System.out.println("🔧 Configurando MongoDB com JDK 11 - sem problemas SSL!");
+            System.out.println("🔧 Configurando MongoDB com JDK 21 LTS - SSL nativo otimizado!");
             
-            // JDK 11 não tem problemas com MongoDB Atlas SSL - configuração simples
+            // JDK 21 tem suporte SSL/TLS nativo excelente - configuração clean
             MongoClientSettings settings = MongoClientSettings.builder()
                     .applyConnectionString(new ConnectionString(mongoUri))
                     .applyToConnectionPoolSettings(builder -> {
@@ -32,7 +32,7 @@ public class MongoConfigProduction {
                                .minSize(2)
                                .maxWaitTime(30, TimeUnit.SECONDS)
                                .maxConnectionIdleTime(120, TimeUnit.SECONDS)
-                               .maxConnectionLifeTime(600, TimeUnit.SECONDS);
+                               .maxConnectionLifeTime(0, TimeUnit.SECONDS);
                     })
                     .applyToSocketSettings(builder -> {
                         builder.connectTimeout(30, TimeUnit.SECONDS)
@@ -46,7 +46,7 @@ public class MongoConfigProduction {
             try {
                 MongoDatabase database = mongoClient.getDatabase("wellora");
                 database.runCommand(new org.bson.Document("ping", 1));
-                System.out.println("✅ MongoDB conectado com sucesso usando JDK 11!");
+                System.out.println("✅ MongoDB conectado com JDK 21 - SSL nativo funcionando!");
             } catch (Exception e) {
                 System.err.println("⚠️ Ping falhou mas cliente criado: " + e.getMessage());
             }
@@ -56,14 +56,7 @@ public class MongoConfigProduction {
         } catch (Exception e) {
             System.err.println("❌ Erro ao configurar MongoDB: " + e.getMessage());
             e.printStackTrace();
-            
-            // Fallback para configuração mais simples ainda
-            try {
-                System.out.println("🔄 Tentando configuração básica...");
-                return MongoClients.create(mongoUri);
-            } catch (Exception fallbackError) {
-                throw new RuntimeException("Falha total na configuração MongoDB", e);
-            }
+            throw new RuntimeException("Falha na configuração MongoDB", e);
         }
     }
 }

@@ -1,11 +1,11 @@
-FROM eclipse-temurin:11-jdk-alpine as build
+FROM eclipse-temurin:21-jdk-alpine as build
 
 WORKDIR /app
 COPY . .
 RUN chmod +x mvnw
 RUN ./mvnw clean package -DskipTests
 
-FROM eclipse-temurin:11-jre-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 WORKDIR /app
 COPY --from=build /app/target/wellora-backend-1.0.0.jar app.jar
