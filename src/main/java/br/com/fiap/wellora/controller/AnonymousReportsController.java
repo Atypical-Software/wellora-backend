@@ -69,6 +69,7 @@ public class AnonymousReportsController {
                 Aggregation.project("count").and("nivelHumor").previousOperation()
             );
 
+            @SuppressWarnings("rawtypes")
             AggregationResults<Map> results = mongoTemplate.aggregate(
                 aggregation, "anonymous_humor_checkins", Map.class);
 
@@ -116,6 +117,7 @@ public class AnonymousReportsController {
                 Aggregation.sort(org.springframework.data.domain.Sort.Direction.ASC, "date")
             );
 
+            @SuppressWarnings("rawtypes")
             AggregationResults<Map> results = mongoTemplate.aggregate(
                 aggregation, "anonymous_responses", Map.class);
 
