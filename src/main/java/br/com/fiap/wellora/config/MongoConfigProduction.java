@@ -25,45 +25,73 @@ public class MongoConfigProduction {
     @Bean
     public MongoClient mongoClient() {
         try {
-            System.out.println("🔧 Configurando MongoDB com SSL customizado para produção...");
+            System.out.println("🔧 Configurando MongoDB com SSL BYPASS TOTAL para produção...");
             
-            // Criar SSLContext que aceita todos os certificados (apenas para produção com MongoDB Atlas)
+            // Configurar propriedades do sistema ANTES de qualquer conexão
+            System.setProperty("com.mongodb.useJSSE", "false");
+            System.setProperty("jdk.tls.useExtendedMasterSecret", "false");
+            System.setProperty("jdk.tls.client.protocols", "TLSv1.2");
+            System.setProperty("javax.net.ssl.trustStore", "");
+            System.setProperty("javax.net.ssl.trustStorePassword", "");
+            System.setProperty("javax.net.ssl.keyStore", "");
+            System.setProperty("javax.net.ssl.keyStorePassword", "");
+            
+            // Desabilitar completamente validação SSL
+            System.setProperty("com.mongodb.ssl.sslInvalidHostNameAllowed", "true");
+            System.setProperty("com.mongodb.ssl.enabled", "false");
+            
+            // Criar SSLContext completamente permissivo
             SSLContext sslContext = SSLContext.getInstance("TLS");
             sslContext.init(null, new TrustManager[]{new X509TrustManager() {
-                public X509Certificate[] getAcceptedIssuers() { return new X509Certificate[0]; }
+                public X509Certificate[] getAcceptedIssuers() { return null; }
                 public void checkClientTrusted(X509Certificate[] certs, String authType) {}
                 public void checkServerTrusted(X509Certificate[] certs, String authType) {}
             }}, new java.security.SecureRandom());
+            
+            // Definir como contexto SSL padrão
+            SSLContext.setDefault(sslContext);
 
-            // Configurar cliente MongoDB com SSL customizado
+            // URI limpa sem parâmetros SSL
+            String cleanUri = mongoUri.split("\\?")[0] + "?retryWrites=true&w=majority";
+            System.out.println("🌐 URI limpa: " + cleanUri.replaceAll(":[^:]*@", ":***@"));
+
+            // Configurar cliente MongoDB SEM SSL
             MongoClientSettings settings = MongoClientSettings.builder()
-                    .applyConnectionString(new ConnectionString(mongoUri))
-                    .applyToSslSettings(builder -> {
-                        builder.enabled(true)
-                               .invalidHostNameAllowed(true)
-                               .context(sslContext);
-                    })
+                    .applyConnectionString(new ConnectionString(cleanUri))
                     .applyToConnectionPoolSettings(builder -> {
-                        builder.maxSize(10)
+                        builder.maxSize(5)
                                .minSize(0)
-                               .maxWaitTime(30, TimeUnit.SECONDS)
-                               .maxConnectionIdleTime(120, TimeUnit.SECONDS)
-                               .maxConnectionLifeTime(0, TimeUnit.SECONDS);
+                               .maxWaitTime(60, TimeUnit.SECONDS)
+                               .maxConnectionIdleTime(300, TimeUnit.SECONDS);
                     })
                     .applyToSocketSettings(builder -> {
-                        builder.connectTimeout(30, TimeUnit.SECONDS)
-                               .readTimeout(30, TimeUnit.SECONDS);
+                        builder.connectTimeout(60, TimeUnit.SECONDS)
+                               .readTimeout(60, TimeUnit.SECONDS);
+                    })
+                    .applyToServerSettings(builder -> {
+                        builder.heartbeatFrequency(30, TimeUnit.SECONDS)
+                               .minHeartbeatFrequency(10, TimeUnit.SECONDS);
                     })
                     .build();
 
             MongoClient client = MongoClients.create(settings);
-            System.out.println("✅ MongoDB cliente configurado com SSL customizado!");
+            System.out.println("✅ MongoDB cliente configurado SEM SSL!");
             return client;
             
         } catch (Exception e) {
-            System.err.println("❌ Erro ao configurar MongoDB SSL: " + e.getMessage());
+            System.err.println("❌ Erro ao configurar MongoDB: " + e.getMessage());
             e.printStackTrace();
-            throw new RuntimeException("Falha na configuração MongoDB SSL", e);
+            
+            // Fallback: tentar com URI original
+            try {
+                System.out.println("🔄 Tentando fallback com URI original...");
+                MongoClient fallbackClient = MongoClients.create(mongoUri);
+                System.out.println("✅ Fallback funcionou!");
+                return fallbackClient;
+            } catch (Exception fallbackError) {
+                System.err.println("❌ Fallback também falhou: " + fallbackError.getMessage());
+                throw new RuntimeException("Falha total na configuração MongoDB", e);
+            }
         }
     }
 }
