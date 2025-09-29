@@ -41,3 +41,4 @@ Back-end para aplicativo de bem-estar emocional e avaliações psicossociais con
 - Registro de avaliações psicossociais
 - Histórico completo de dados
 - Relatórios para acompanhamento contínuo
+"# Deploy fix - JAR executavel"  
