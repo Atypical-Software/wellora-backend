@@ -158,4 +158,98 @@ public class MongoDebugController {
         
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/setup-standard-questions")
+    public ResponseEntity<Map<String, Object>> setupStandardQuestions() {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            // Limpar perguntas existentes
+            mongoTemplate.remove(new org.springframework.data.mongodb.core.query.Query(), "questions");
+            
+            // Opções padrão para todas as perguntas
+            java.util.List<String> opcoesPadrao = java.util.Arrays.asList("Excelente", "Bom", "Razoável", "Ruim", "Péssimo");
+            
+            // Criar perguntas diretamente como Map para inserir no MongoDB
+            java.util.List<Map<String, Object>> perguntas = new java.util.ArrayList<>();
+            
+            // Pergunta 1
+            Map<String, Object> p1 = new HashMap<>();
+            p1.put("id", "q1");
+            p1.put("text", "Como você está se sentindo hoje?");
+            p1.put("category", "bem-estar");
+            p1.put("type", "multiple_choice");
+            p1.put("options", opcoesPadrao);
+            p1.put("isActive", true);
+            p1.put("priority", 1);
+            p1.put("createdAt", java.time.LocalDateTime.now());
+            perguntas.add(p1);
+            
+            // Pergunta 2
+            Map<String, Object> p2 = new HashMap<>();
+            p2.put("id", "q2");
+            p2.put("text", "Como está sua motivação no trabalho?");
+            p2.put("category", "trabalho");
+            p2.put("type", "multiple_choice");
+            p2.put("options", opcoesPadrao);
+            p2.put("isActive", true);
+            p2.put("priority", 1);
+            p2.put("createdAt", java.time.LocalDateTime.now());
+            perguntas.add(p2);
+            
+            // Pergunta 3
+            Map<String, Object> p3 = new HashMap<>();
+            p3.put("id", "q3");
+            p3.put("text", "Como está sua relação com os colegas?");
+            p3.put("category", "social");
+            p3.put("type", "multiple_choice");
+            p3.put("options", opcoesPadrao);
+            p3.put("isActive", true);
+            p3.put("priority", 1);
+            p3.put("createdAt", java.time.LocalDateTime.now());
+            perguntas.add(p3);
+            
+            // Pergunta 4
+            Map<String, Object> p4 = new HashMap<>();
+            p4.put("id", "q4");
+            p4.put("text", "Como está seu nível de estresse?");
+            p4.put("category", "saude");
+            p4.put("type", "multiple_choice");
+            p4.put("options", opcoesPadrao);
+            p4.put("isActive", true);
+            p4.put("priority", 1);
+            p4.put("createdAt", java.time.LocalDateTime.now());
+            perguntas.add(p4);
+            
+            // Pergunta 5
+            Map<String, Object> p5 = new HashMap<>();
+            p5.put("id", "q5");
+            p5.put("text", "Como você avalia seu bem-estar geral?");
+            p5.put("category", "geral");
+            p5.put("type", "multiple_choice");
+            p5.put("options", opcoesPadrao);
+            p5.put("isActive", true);
+            p5.put("priority", 1);
+            p5.put("createdAt", java.time.LocalDateTime.now());
+            perguntas.add(p5);
+            
+            // Salvar todas as perguntas
+            for (Map<String, Object> pergunta : perguntas) {
+                mongoTemplate.save(pergunta, "questions");
+            }
+            
+            response.put("status", "success");
+            response.put("message", "5 perguntas padrão criadas com sucesso");
+            response.put("perguntasCriadas", perguntas.size());
+            response.put("opcoesPadrao", opcoesPadrao);
+            response.put("perguntas", perguntas);
+            
+            return ResponseEntity.ok(response);
+            
+        } catch (Exception e) {
+            response.put("status", "error");
+            response.put("message", "Erro ao criar perguntas: " + e.getMessage());
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 }
