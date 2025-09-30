@@ -25,8 +25,31 @@ public class HealthController {
         response.put("timestamp", java.time.Instant.now().toString());
         response.put("service", "wellora-backend");
         response.put("version", "1.0.0");
+        response.put("message", "Wellora API is alive! 🚀");
         
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * ENDPOINT IDEAL PARA ROBÔS DE KEEP-ALIVE
+     * Endpoint super simples e rápido para manter a API ativa
+     */
+    @GetMapping("/ping")
+    public ResponseEntity<Map<String, Object>> ping() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "ok");
+        response.put("pong", "alive");
+        response.put("timestamp", java.time.Instant.now().toString());
+        
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Endpoint ainda mais simples - retorna só texto
+     */
+    @GetMapping("/alive")
+    public ResponseEntity<String> alive() {
+        return ResponseEntity.ok("ALIVE");
     }
 
     @GetMapping("/connectivity-check")
