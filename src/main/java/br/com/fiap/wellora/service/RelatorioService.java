@@ -32,7 +32,8 @@ public class RelatorioService {
     private MongoTemplate mongoTemplate;
 
     public RelatorioAdminResponse gerarRelatorioAdmin(String token) throws Exception {
-        String email = jwtService.getEmailFromToken(token);
+        // Validar token (sem usar email por enquanto)
+        jwtService.getEmailFromToken(token);
 
         RelatorioAdminResponse relatorio = new RelatorioAdminResponse();
         relatorio.setTitulo("Relatório Administrativo - Wellora");
@@ -53,51 +54,61 @@ public class RelatorioService {
                 .map(response -> (Map<String, Object>) response)
                 .collect(Collectors.toList());
             
-            int felizes = 0;
-            int neutros = 0; 
-            int cansados = 0;
+            // Contadores para as 5 opções padronizadas
+            Map<String, Integer> contagemRespostas = new HashMap<>();
+            contagemRespostas.put("Excelente", 0);
+            contagemRespostas.put("Bom", 0);
+            contagemRespostas.put("Razoável", 0);
+            contagemRespostas.put("Ruim", 0);
+            contagemRespostas.put("Péssimo", 0);
+            
+            int totalRespostasAnalisadas = 0;
             
             for (Map<String, Object> response : responses) {
                 Map<String, String> respostas = extrairRespostas(response);
                 
                 if (respostas != null && !respostas.isEmpty()) {
-                    int sentimentoPessoa = analisarSentimentoDasRespostas(respostas);
-                    
-                    if (sentimentoPessoa > 0) {
-                        felizes++;
-                    } else if (sentimentoPessoa < 0) {
-                        cansados++;
-                    } else {
-                        neutros++;
+                    for (String resposta : respostas.values()) {
+                        if (resposta != null) {
+                            String respostaPadronizada = padronizarResposta(resposta);
+                            if (respostaPadronizada != null) {
+                                contagemRespostas.put(respostaPadronizada, 
+                                    contagemRespostas.get(respostaPadronizada) + 1);
+                                totalRespostasAnalisadas++;
+                            }
+                        }
                     }
                 }
             }
             
-            if (felizes > 0) {
-                sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                    "feliz", felizes, (felizes * 100) / (int) totalRespostas));
-            }
-            if (neutros > 0) {
-                sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                    "neutro", neutros, (neutros * 100) / (int) totalRespostas));
-            }
-            if (cansados > 0) {
-                sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                    "cansado", cansados, (cansados * 100) / (int) totalRespostas));
+            // Gerar estatísticas para cada tipo de resposta
+            if (totalRespostasAnalisadas > 0) {
+                for (Map.Entry<String, Integer> entry : contagemRespostas.entrySet()) {
+                    if (entry.getValue() > 0) {
+                        int porcentagem = (entry.getValue() * 100) / totalRespostasAnalisadas;
+                        String emoji = getEmojiParaResposta(entry.getKey());
+                        sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
+                            emoji + " " + entry.getKey(), 
+                            entry.getValue(), 
+                            porcentagem
+                        ));
+                    }
+                }
             }
         }
         
         relatorio.setSentimentos(sentimentos);
 
+        // Calcular colaboradores com problemas (Ruim + Péssimo)
         int totalSentimentos = sentimentos.stream().mapToInt(RelatorioAdminResponse.SentimentoInfo::getQuantidade).sum();
-        int cansadosTotal = sentimentos.stream()
-            .filter(s -> "cansado".equals(s.getTipo()))
+        int problemasTotal = sentimentos.stream()
+            .filter(s -> s.getTipo().contains("Ruim") || s.getTipo().contains("Péssimo"))
             .mapToInt(RelatorioAdminResponse.SentimentoInfo::getQuantidade)
             .sum();
             
-        int porcentagemCansado = totalSentimentos > 0 ? (cansadosTotal * 100) / totalSentimentos : 0;
+        int porcentagemProblemas = totalSentimentos > 0 ? (problemasTotal * 100) / totalSentimentos : 0;
         RelatorioAdminResponse.ColaboradoresInfo colaboradores = new RelatorioAdminResponse.ColaboradoresInfo(
-            "Últimos 30 dias", porcentagemCansado, 100 - porcentagemCansado);
+            "Últimos 30 dias", porcentagemProblemas, 100 - porcentagemProblemas);
         relatorio.setColaboradoresComCansaco(colaboradores);
 
         return relatorio;
@@ -166,27 +177,95 @@ public class RelatorioService {
         return null;
     }
     
-    private int analisarSentimentoDasRespostas(Map<String, String> respostas) {
-        int pontuacao = 0;
+    /**
+     * Padroniza as respostas para as 5 opções padrão
+     */
+    private String padronizarResposta(String resposta) {
+        if (resposta == null) return null;
         
-        for (String resposta : respostas.values()) {
-            if (resposta == null) continue;
-            
-            String resp = resposta.toLowerCase().trim();
-            
-            if (resp.contains("muito bem") || resp.contains("ótimo") || resp.contains("excelente") || 
-                resp.contains("satisfeito") || resp.contains("bem") || resp.contains("motivado") ||
-                resp.contains("feliz") || resp.contains("positivo") || resp.contains("bom")) {
-                pontuacao += 1;
-            }
-            
-            else if (resp.contains("cansado") || resp.contains("estressado") || resp.contains("ruim") ||
-                     resp.contains("mal") || resp.contains("insatisfeito") || resp.contains("péssimo") ||
-                     resp.contains("desmotivado") || resp.contains("triste") || resp.contains("negativo")) {
-                pontuacao -= 1;
-            }
+        String resp = resposta.toLowerCase().trim();
+        
+        // Excelente
+        if (resp.contains("excelente") || resp.contains("ótimo") || resp.contains("muito bom") || 
+            resp.contains("perfeito") || resp.contains("maravilhoso")) {
+            return "Excelente";
         }
         
-        return pontuacao;
+        // Bom
+        if (resp.contains("bom") || resp.contains("bem") || resp.contains("satisfeito") || 
+            resp.contains("positivo") || resp.contains("legal") || resp.contains("ok")) {
+            return "Bom";
+        }
+        
+        // Razoável  
+        if (resp.contains("razoável") || resp.contains("razavel") || resp.contains("regular") ||
+            resp.contains("médio") || resp.contains("medio") || resp.contains("normal") ||
+            resp.contains("neutro") || resp.contains("mais ou menos")) {
+            return "Razoável";
+        }
+        
+        // Ruim
+        if (resp.contains("ruim") || resp.contains("mal") || resp.contains("insatisfeito") ||
+            resp.contains("negativo") || resp.contains("chato") || resp.contains("difícil") ||
+            resp.contains("dificil") || resp.contains("complicado")) {
+            return "Ruim";
+        }
+        
+        // Péssimo
+        if (resp.contains("péssimo") || resp.contains("pessimo") || resp.contains("terrível") ||
+            resp.contains("terrivel") || resp.contains("horrível") || resp.contains("horrivel") ||
+            resp.contains("muito ruim") || resp.contains("muito mal")) {
+            return "Péssimo";
+        }
+        
+        // Se não encontrou correspondência, tenta inferir pela análise de sentimento
+        return inferirRespostaPorSentimento(resp);
+    }
+    
+    /**
+     * Infere a resposta padrão baseada em análise de sentimento
+     */
+    private String inferirRespostaPorSentimento(String resposta) {
+        String resp = resposta.toLowerCase().trim();
+        
+        // Palavras muito positivas
+        if (resp.contains("feliz") || resp.contains("motivado") || resp.contains("animado") ||
+            resp.contains("excited") || resp.contains("happy")) {
+            return "Excelente";
+        }
+        
+        // Palavras positivas
+        if (resp.contains("satisfied") || resp.contains("tranquilo") || resp.contains("calmo")) {
+            return "Bom";
+        }
+        
+        // Palavras negativas
+        if (resp.contains("cansado") || resp.contains("tired") || resp.contains("estressado") ||
+            resp.contains("stressed") || resp.contains("worried") || resp.contains("preocupado")) {
+            return "Ruim";
+        }
+        
+        // Palavras muito negativas
+        if (resp.contains("sad") || resp.contains("triste") || resp.contains("angry") ||
+            resp.contains("raiva") || resp.contains("fear") || resp.contains("medo")) {
+            return "Péssimo";
+        }
+        
+        // Padrão para respostas não classificadas
+        return "Razoável";
+    }
+    
+    /**
+     * Retorna o emoji correspondente a cada tipo de resposta
+     */
+    private String getEmojiParaResposta(String tipoResposta) {
+        switch (tipoResposta) {
+            case "Excelente": return "😍";
+            case "Bom": return "😊";
+            case "Razoável": return "😐";
+            case "Ruim": return "😞";
+            case "Péssimo": return "😭";
+            default: return "📊";
+        }
     }
 }

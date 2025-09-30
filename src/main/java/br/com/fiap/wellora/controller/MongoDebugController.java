@@ -118,4 +118,44 @@ public class MongoDebugController {
             return ResponseEntity.status(500).body(response);
         }
     }
+
+    @GetMapping("/responses")
+    public ResponseEntity<Map<String, Object>> getResponses() {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            boolean exists = mongoTemplate.collectionExists("anonymous_responses");
+            response.put("exists", exists);
+            response.put("collection", "anonymous_responses");
+            
+            if (exists) {
+                long count = mongoTemplate.getCollection("anonymous_responses").countDocuments();
+                response.put("count", count);
+                
+                if (count > 0) {
+                    // Buscar as últimas respostas
+                    org.springframework.data.mongodb.core.query.Query query = 
+                        new org.springframework.data.mongodb.core.query.Query()
+                            .with(org.springframework.data.domain.Sort.by(
+                                org.springframework.data.domain.Sort.Direction.DESC, "_id"));
+                    query.limit(5);
+                    
+                    java.util.List<Object> responses = mongoTemplate.find(query, Object.class, "anonymous_responses");
+                    response.put("data", responses);
+                } else {
+                    response.put("data", new java.util.ArrayList<>());
+                }
+            } else {
+                response.put("data", new java.util.ArrayList<>());
+            }
+            
+            response.put("message", "Debug: anonymous_responses collection status");
+            
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+            response.put("exists", false);
+        }
+        
+        return ResponseEntity.ok(response);
+    }
 }
