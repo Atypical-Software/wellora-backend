@@ -144,6 +144,44 @@ Response:
 }
 
 ====================================================================
+🤖 KEEP-ALIVE / MONITORING
+====================================================================
+
+8. PING (Para robôs manterem API ativa)
+----------------------------------------
+GET /ping
+(Sem autenticação necessária)
+
+Response:
+{
+  "status": "ok",
+  "pong": "alive", 
+  "timestamp": "2025-09-29T18:45:30.123Z"
+}
+
+9. ALIVE (Resposta texto simples)
+---------------------------------
+GET /alive
+(Sem autenticação necessária)
+
+Response:
+ALIVE
+
+10. HEALTH CHECK COMPLETO
+--------------------------
+GET /health
+(Sem autenticação necessária)
+
+Response:
+{
+  "status": "UP",
+  "timestamp": "2025-09-29T18:45:30.123Z",
+  "service": "wellora-backend",
+  "version": "1.0.0",
+  "message": "Wellora API is alive! 🚀"
+}
+
+====================================================================
 😊 HUMOR/CHECKIN
 ====================================================================
 
@@ -276,5 +314,22 @@ curl -X POST "https://wellora-backend-1.onrender.com/api/auth/anonymous-session"
 # Buscar Perguntas
 curl -H "Authorization: Bearer {ANONYMOUS_TOKEN}" \
      "https://wellora-backend-1.onrender.com/api/questions/daily"
+
+====================================================================
+🤖 URLS PARA ROBÔS DE KEEP-ALIVE (Evitar hibernação da API)
+====================================================================
+
+# URL RECOMENDADA para robôs (JSON simples):
+https://wellora-backend-1.onrender.com/api/ping
+
+# URL ultra-simples (texto puro):
+https://wellora-backend-1.onrender.com/api/alive
+
+# Health check completo:
+https://wellora-backend-1.onrender.com/api/health
+
+⏰ RECOMENDAÇÃO: Configure seu robô para chamar /api/ping a cada 10-15 minutos
+🔓 Sem autenticação necessária
+⚡ Resposta rápida e leve
 
 ====================================================================

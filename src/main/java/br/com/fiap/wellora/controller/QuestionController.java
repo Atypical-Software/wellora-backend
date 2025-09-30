@@ -1,14 +1,10 @@
 package br.com.fiap.wellora.controller;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,41 +42,56 @@ public class QuestionController {
             @RequestHeader("Authorization") String authHeader) {
 
         try {
+            System.out.println("🔍 DEBUG: Iniciando busca de perguntas diárias (SISTEMA ALEATÓRIO)");
+            
             // Validar token anônimo
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                System.out.println("❌ DEBUG: Header Authorization inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
             String token = authHeader.substring(7);
             if (!jwtService.isValidAnonymousToken(token)) {
+                System.out.println("❌ DEBUG: Token anônimo inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
-            String empresaId = jwtService.getEmpresaIdFromToken(token);
-
-            // Calcular offset baseado na data atual
-            LocalDate startDate = LocalDate.of(2024, 1, 1);
+            // NOVO SISTEMA: Seed baseado na data para aleatoriedade consistente
             LocalDate today = LocalDate.now();
-            long daysSinceStart = ChronoUnit.DAYS.between(startDate, today);
-            int offset = (int) (daysSinceStart % 100); // Ciclo de 100 dias
+            long seed = today.toEpochDay(); // Sempre a mesma seed para o mesmo dia
+            
+            System.out.println("🔍 DEBUG: Data de hoje: " + today);
+            System.out.println("🔍 DEBUG: Seed para aleatoriedade: " + seed);
 
-            // Buscar perguntas para a empresa
-            Query query = new Query(Criteria.where("empresaId").is(empresaId));
-            query.skip(offset).limit(5); // 5 perguntas por dia
+            // Buscar TODAS as perguntas disponíveis (sem filtros)
+            Query query = new Query();
+            List<Question> allQuestions = mongoTemplate.find(query, Question.class);
+            
+            System.out.println("🔍 DEBUG: Total de perguntas no banco: " + allQuestions.size());
 
-            List<Question> questions = mongoTemplate.find(query, Question.class);
+            if (allQuestions.isEmpty()) {
+                System.out.println("❌ DEBUG: Nenhuma pergunta encontrada no banco!");
+                Map<String, Object> emptyResponse = new HashMap<>();
+                emptyResponse.put("questions", new ArrayList<>());
+                emptyResponse.put("message", "Nenhuma pergunta disponível");
+                emptyResponse.put("date", today.toString());
+                return ResponseEntity.ok(emptyResponse);
+            }
 
-            if (questions.isEmpty()) {
-                // Se não há perguntas específicas, usar perguntas padrão
-                Query defaultQuery = new Query(Criteria.where("empresaId").exists(false));
-                defaultQuery.skip(offset).limit(5);
-                questions = mongoTemplate.find(defaultQuery, Question.class);
+            // Selecionar 5 perguntas usando aleatoriedade baseada na data
+            List<Question> dailyQuestions = selectDailyQuestions(allQuestions, seed, 5);
+            
+            System.out.println("🔍 DEBUG: Perguntas selecionadas para hoje: " + dailyQuestions.size());
+            for (Question q : dailyQuestions) {
+                System.out.println("🔍 DEBUG: - " + q.getText());
             }
 
             Map<String, Object> response = new HashMap<>();
-            response.put("questions", questions);
+            response.put("questions", dailyQuestions);
             response.put("date", today.toString());
-            response.put("cycleDay", offset + 1);
+            response.put("totalAvailable", allQuestions.size());
+            response.put("selectedCount", dailyQuestions.size());
+            response.put("seed", seed);
 
             return ResponseEntity.ok(response);
 
@@ -153,5 +164,25 @@ public class QuestionController {
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
         }
+    }
+
+    /**
+     * Seleciona perguntas diárias aleatórias usando uma seed para garantir consistência durante o dia
+     */
+    private List<Question> selectDailyQuestions(List<Question> allQuestions, long seed, int count) {
+        if (allQuestions.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // Cria uma cópia da lista para embaralhar
+        List<Question> shuffledQuestions = new ArrayList<>(allQuestions);
+        
+        // Usa a seed baseada na data para garantir que as mesmas perguntas sejam selecionadas durante todo o dia
+        Random random = new Random(seed);
+        Collections.shuffle(shuffledQuestions, random);
+        
+        // Retorna apenas o número solicitado de perguntas ou todas se houver menos que o solicitado
+        int actualCount = Math.min(count, shuffledQuestions.size());
+        return shuffledQuestions.subList(0, actualCount);
     }
 }
