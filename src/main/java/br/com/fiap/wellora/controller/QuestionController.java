@@ -23,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import br.com.fiap.wellora.model.Question;
 import br.com.fiap.wellora.service.JwtService;
+import br.com.fiap.wellora.service.AuditoriaService;
 
 /**
  * Controller para gerenciamento de perguntas diárias
@@ -38,6 +39,9 @@ public class QuestionController {
 
     @Autowired
     private JwtService jwtService;
+    
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     /**
      * Obtém as perguntas do dia para um usuário anônimo
@@ -89,6 +93,14 @@ public class QuestionController {
             response.put("selectedCount", dailyQuestions.size());
             response.put("seed", seed);
 
+            // LOG: Registrar acesso às perguntas diárias
+            auditoriaService.logarAcao(
+                "anonimo",
+                "PERGUNTAS_DIARIAS_ACESSADAS",
+                "Perguntas diárias acessadas. Data: " + today + ", Quantidade: " + dailyQuestions.size(),
+                "sistema"
+            );
+
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
@@ -133,6 +145,13 @@ public class QuestionController {
             // Salvar no MongoDB
             mongoTemplate.save(responseDocument, "anonymous_responses");
             
+            // LOG: Registrar submissão de resposta anônima
+            auditoriaService.logarAcao(
+                sessionId,
+                "RESPOSTA_ANONIMA_ENVIADA",
+                "Resposta anônima submetida com sucesso. Empresa: " + empresaId + ", Respostas: " + responses.size(),
+                "sistema"
+            );
 
             Map<String, String> result = new HashMap<>();
             result.put("status", "success");
@@ -141,8 +160,13 @@ public class QuestionController {
             return ResponseEntity.ok(result);
 
         } catch (Exception e) {
-            System.err.println("❌ DEBUG: Erro ao salvar respostas: " + e.getMessage());
-            e.printStackTrace();
+            // LOG: Registrar erro na submissão
+            auditoriaService.logarAcao(
+                "sistema",
+                "RESPOSTA_ANONIMA_ERRO",
+                "Erro ao processar submissão de resposta anônima: " + e.getMessage() + " - Tipo: " + e.getClass().getSimpleName(),
+                "sistema"
+            );
             
             Map<String, String> result = new HashMap<>();
             result.put("status", "error");

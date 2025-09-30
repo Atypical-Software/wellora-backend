@@ -86,4 +86,36 @@ public class MongoDebugController {
         
         return ResponseEntity.ok(response);
     }
+    
+    @GetMapping("/logs")
+    public ResponseEntity<Map<String, Object>> getLogs() {
+        Map<String, Object> response = new HashMap<>();
+        
+        try {
+            long count = mongoTemplate.count(new org.springframework.data.mongodb.core.query.Query(), "logs");
+            response.put("count", count);
+            response.put("exists", count > 0);
+            response.put("collection", "logs");
+            
+            if (count > 0) {
+                org.springframework.data.mongodb.core.query.Query query = 
+                    new org.springframework.data.mongodb.core.query.Query()
+                        .with(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "timestamp"))
+                        .limit(10);
+                        
+                java.util.List<Map> logs = mongoTemplate.find(query, Map.class, "logs");
+                response.put("data", logs);
+                response.put("message", "Debug: logs collection status");
+            } else {
+                response.put("data", new java.util.ArrayList<>());
+                response.put("message", "No logs found in collection");
+            }
+            
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.put("error", e.getMessage());
+            response.put("message", "Error accessing logs collection");
+            return ResponseEntity.status(500).body(response);
+        }
+    }
 }

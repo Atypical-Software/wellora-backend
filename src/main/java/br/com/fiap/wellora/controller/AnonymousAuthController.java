@@ -6,6 +6,7 @@ import br.com.fiap.wellora.dto.AnonymousSessionResponse;
 import br.com.fiap.wellora.dto.ValidationResponse;
 import br.com.fiap.wellora.service.AnonymousSessionService;
 import br.com.fiap.wellora.service.JwtService;
+import br.com.fiap.wellora.service.AuditoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +26,9 @@ public class AnonymousAuthController {
 
     @Autowired
     private JwtService jwtService;
+    
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     /**
      * Cria uma nova sessão anônima para o dispositivo
@@ -43,6 +47,14 @@ public class AnonymousAuthController {
                 String token = jwtService.generateAnonymousToken(
                     existingSession.getSessionId(),
                     existingSession.getEmpresaId()
+                );
+
+                // LOG: Registrar reutilização de sessão anônima
+                auditoriaService.logarAcao(
+                    existingSession.getSessionId(),
+                    "SESSAO_ANONIMA_REUTILIZADA",
+                    "Sessão anônima reutilizada. Device: " + request.getDeviceId() + ", Empresa: " + existingSession.getEmpresaId(),
+                    "sistema"
                 );
 
                 return ResponseEntity.ok(new AnonymousSessionResponse(
@@ -64,6 +76,14 @@ public class AnonymousAuthController {
                 session.getEmpresaId()
             );
 
+            // LOG: Registrar criação de nova sessão anônima
+            auditoriaService.logarAcao(
+                session.getSessionId(),
+                "SESSAO_ANONIMA_CRIADA",
+                "Nova sessão anônima criada. Device: " + request.getDeviceId() + ", Empresa: " + request.getEmpresaId(),
+                "sistema"
+            );
+
             return ResponseEntity.ok(new AnonymousSessionResponse(
                 session.getSessionId(),
                 token,
@@ -71,6 +91,14 @@ public class AnonymousAuthController {
             ));
 
         } catch (Exception e) {
+            // LOG: Registrar erro na criação de sessão
+            auditoriaService.logarAcao(
+                "sistema",
+                "SESSAO_ANONIMA_ERRO",
+                "Erro ao criar sessão anônima: " + e.getMessage() + " - Device: " + request.getDeviceId(),
+                "sistema"
+            );
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new AnonymousSessionResponse(null, null, null));
         }

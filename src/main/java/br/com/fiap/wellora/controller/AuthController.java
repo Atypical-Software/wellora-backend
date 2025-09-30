@@ -21,6 +21,7 @@ import br.com.fiap.wellora.model.AdminUser;
 import br.com.fiap.wellora.service.AdminUserService;
 import br.com.fiap.wellora.service.AuthService;
 import br.com.fiap.wellora.service.JwtService;
+import br.com.fiap.wellora.service.AuditoriaService;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -35,6 +36,9 @@ public class AuthController {
 
     @Autowired
     private JwtService jwtService;
+    
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     /**
      * Login tradicional para usuarios comuns (manter compatibilidade)
@@ -60,16 +64,10 @@ public class AuthController {
             String email = request.get("email");
             String password = request.get("password");
 
-            System.out.println("🔍 DEBUG AuthController: ========== ADMIN LOGIN ==========");
-            System.out.println("🔍 DEBUG AuthController: Email recebido: " + email);
-            System.out.println("🔍 DEBUG AuthController: Password length: " + (password != null ? password.length() : "null"));
-
             Optional<AdminUser> adminOpt = adminUserService.authenticate(email, password);
 
             if (adminOpt.isPresent()) {
                 AdminUser admin = adminOpt.get();
-
-                System.out.println("✅ DEBUG AuthController: Login bem-sucedido para: " + admin.getName());
 
                 // Gerar token JWT para admin
                 String token = jwtService.generateToken(admin.getEmail());
@@ -80,20 +78,36 @@ public class AuthController {
                 response.put("name", admin.getName());
                 response.put("empresaId", admin.getEmpresaId());
 
-                System.out.println("✅ DEBUG AuthController: Token gerado: " + token.substring(0, 20) + "...");
-                System.out.println("🔍 DEBUG AuthController: ========== FIM ADMIN LOGIN ==========");
+                // LOG: Registrar login de admin bem-sucedido
+                auditoriaService.logarAcao(
+                    email,
+                    "ADMIN_LOGIN_REALIZADO",
+                    "Login de administrador realizado com sucesso. Admin: " + admin.getName() + ", Empresa: " + admin.getEmpresaId(),
+                    "sistema"
+                );
 
                 return ResponseEntity.ok(response);
             } else {
-                System.out.println("❌ DEBUG AuthController: Login falhou - credenciais inválidas");
-                System.out.println("🔍 DEBUG AuthController: ========== FIM ADMIN LOGIN ==========");
+                // LOG: Registrar tentativa de login falhada
+                auditoriaService.logarAcao(
+                    email != null ? email : "email_nao_informado",
+                    "ADMIN_LOGIN_FALHOU",
+                    "Tentativa de login de administrador com credenciais inválidas",
+                    "sistema"
+                );
+                
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
         } catch (Exception e) {
-            System.err.println("❌ DEBUG AuthController: Erro no login admin: " + e.getMessage());
-            e.printStackTrace();
-            System.out.println("🔍 DEBUG AuthController: ========== FIM ADMIN LOGIN ==========");
+            // LOG: Registrar erro no sistema de login
+            auditoriaService.logarAcao(
+                "sistema",
+                "ADMIN_LOGIN_ERRO",
+                "Erro interno no sistema de login administrativo: " + e.getMessage() + " - Tipo: " + e.getClass().getSimpleName(),
+                "sistema"
+            );
+            
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

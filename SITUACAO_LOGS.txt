@@ -1,0 +1,124 @@
+SITUAÇÃO DOS LOGS NO SISTEMA WELLORA
+
+========================================
+PROBLEMA IDENTIFICADO
+========================================
+❌ Os logs NÃO estão sendo salvos automaticamente
+
+========================================
+CAUSA RAIZ
+========================================
+O sistema tem infraestrutura de logs preparada:
+✅ LogAuditoria.java (model)
+✅ LogAuditoriaRepository.java (repository) 
+✅ AuditoriaService.java (service)
+
+MAS os controllers principais NÃO estão usando o serviço:
+❌ QuestionController.java - NÃO usa AuditoriaService
+❌ AuthController.java - NÃO usa AuditoriaService
+❌ RelatorioController.java - NÃO usa AuditoriaService
+
+========================================
+ONDE OS LOGS DEVERIAM SER SALVOS
+========================================
+1. Login Admin → AuthController.adminLogin()
+2. Respostas Anônimas → QuestionController.submitResponses()
+3. Relatórios Acessados → RelatorioController.obterRelatorioAdmin()
+4. Perguntas Diárias → QuestionController.getDailyQuestions()
+
+========================================
+ONDE OS LOGS SÃO SALVOS (LIMITADO)
+========================================
+✅ QuestionarioService.salvarQuestionario() - MAS só para questionários psicossociais (não usado pelo frontend atual)
+✅ HumorService.registrarCheckin() - MAS só para checkins de humor (não usado pelo frontend atual)
+
+========================================
+COLLECTION NO MONGODB
+========================================
+✅ Collection "logs" existe no MongoDB Atlas
+❌ Mas está vazia porque os controllers principais não salvam logs
+
+========================================
+ESTRUTURA DOS LOGS
+========================================
+Collection: "logs"
+Campos:
+- id: String (auto)
+- level: String ("INFO", "ERROR", "WARN")
+- message: String (ação realizada)
+- context: Map<String, Object> (dados adicionais)
+- timestamp: String (data/hora)
+
+Exemplo de log que DEVERIA ser salvo:
+{
+  "level": "INFO",
+  "message": "RESPOSTA_ANONIMA_ENVIADA",
+  "context": {
+    "sessionId": "anon-sess-xxx",
+    "ip": "127.0.0.1",
+    "questionsCount": 5
+  },
+  "timestamp": "2025-09-30T14:42:00"
+}
+
+========================================
+SOLUÇÃO NECESSÁRIA
+========================================
+Para ativar os logs, precisa:
+
+1. Adicionar @Autowired AuditoriaService nos controllers:
+   - QuestionController
+   - AuthController
+   - RelatorioController
+
+2. Chamar auditoriaService.logarAcao() nos métodos principais:
+   - submitResponses() → "RESPOSTA_ANONIMA_ENVIADA"
+   - adminLogin() → "ADMIN_LOGIN_REALIZADO"
+   - obterRelatorioAdmin() → "RELATORIO_ADMIN_ACESSADO"
+   - getDailyQuestions() → "PERGUNTAS_DIARIAS_ACESSADAS"
+
+========================================
+EXEMPLO DE IMPLEMENTAÇÃO
+========================================
+
+No QuestionController.java:
+```java
+@Autowired
+private AuditoriaService auditoriaService;
+
+// No método submitResponses():
+auditoriaService.logarAcao(
+    sessionId, 
+    "RESPOSTA_ANONIMA_ENVIADA", 
+    "Perguntas respondidas: " + responses.size(), 
+    "frontend-android"
+);
+```
+
+No AuthController.java:
+```java
+@Autowired  
+private AuditoriaService auditoriaService;
+
+// No método adminLogin():
+auditoriaService.logarAcao(
+    admin.getEmail(),
+    "ADMIN_LOGIN_REALIZADO", 
+    "Login bem-sucedido para: " + admin.getName(),
+    "frontend-android"
+);
+```
+
+========================================
+STATUS ATUAL
+========================================
+❌ LOGS NÃO FUNCIONANDO - Controllers não usam AuditoriaService
+✅ Infraestrutura pronta - Só precisa conectar
+✅ MongoDB collection existe - Aguardando dados
+⚠️  Para ativar: Adicionar chamadas nos controllers principais
+
+========================================
+ENDPOINT PARA VERIFICAR LOGS
+========================================
+GET https://wellora-backend-1.onrender.com/api/debug/logs
+(Criado mas ainda não deployed - mostrará logs quando existirem)

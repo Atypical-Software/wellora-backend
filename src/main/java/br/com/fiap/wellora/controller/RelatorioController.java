@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import br.com.fiap.wellora.dto.RelatorioAdminResponse;
 import br.com.fiap.wellora.service.RelatorioService;
+import br.com.fiap.wellora.service.AuditoriaService;
 
 @RestController
 @RequestMapping("/api/relatorio")
@@ -20,54 +21,37 @@ public class RelatorioController {
 
     @Autowired
     private RelatorioService relatorioService;
+    
+    @Autowired
+    private AuditoriaService auditoriaService;
 
     @GetMapping("/admin")
     public ResponseEntity<RelatorioAdminResponse> obterRelatorioAdmin(
             @RequestHeader("Authorization") String token) {
         try {
-            System.out.println("🔍 DEBUG RelatorioController: ========== INICIO REQUISIÇÃO ==========");
-            System.out.println("🔍 DEBUG RelatorioController: Recebendo requisição admin report");
-            System.out.println("🔍 DEBUG RelatorioController: Token: " + token.substring(0, 20) + "...");
-            System.out.println("🔍 DEBUG RelatorioController: Timestamp: " + java.time.LocalDateTime.now());
-            
             RelatorioAdminResponse relatorio = relatorioService.gerarRelatorioAdmin(token);
             
-            // 📋 LOGS DETALHADOS PARA DEBUG DO ANDROID
-            System.out.println("📋 JSON RESPONSE COMPLETO:");
-            System.out.println("📋 titulo: " + relatorio.getTitulo());
-            
-            if (relatorio.getPesquisas() != null) {
-                System.out.println("📋 pesquisas.concluidas: " + relatorio.getPesquisas().getConcluidas());
-                System.out.println("📋 pesquisas.total: " + relatorio.getPesquisas().getTotal());
-                System.out.println("📋 pesquisas.porcentagem: " + relatorio.getPesquisas().getPorcentagem());
-            }
-            
-            if (relatorio.getSentimentos() != null) {
-                System.out.println("📋 sentimentos.size: " + relatorio.getSentimentos().size());
-                for (int i = 0; i < relatorio.getSentimentos().size(); i++) {
-                    var sentimento = relatorio.getSentimentos().get(i);
-                    System.out.println("📋 sentimentos[" + i + "].tipo: " + sentimento.getTipo());
-                    System.out.println("📋 sentimentos[" + i + "].quantidade: " + sentimento.getQuantidade());
-                    System.out.println("📋 sentimentos[" + i + "].porcentagem: " + sentimento.getPorcentagem());
-                }
-            }
-            
-            if (relatorio.getColaboradoresComCansaco() != null) {
-                System.out.println("📋 colaboradores.periodo: " + relatorio.getColaboradoresComCansaco().getPeriodo());
-                System.out.println("📋 colaboradores.porcentagemCansado: " + relatorio.getColaboradoresComCansaco().getPorcentagemCansado());
-                System.out.println("📋 colaboradores.porcentagemOk: " + relatorio.getColaboradoresComCansaco().getPorcentagemOk());
-            }
-            
-            System.out.println("🔍 DEBUG RelatorioController: Relatório gerado: " + relatorio);
-            System.out.println("🔍 DEBUG RelatorioController: Pesquisas: " + relatorio.getPesquisas());
-            System.out.println("🔍 DEBUG RelatorioController: Sentimentos: " + relatorio.getSentimentos());
-            System.out.println("🔍 DEBUG RelatorioController: Colaboradores: " + relatorio.getColaboradoresComCansaco());
-            System.out.println("🔍 DEBUG RelatorioController: ========== FIM REQUISIÇÃO ==========");
+            // LOG: Registrar acesso ao relatório administrativo
+            auditoriaService.logarAcao(
+                "admin",
+                "RELATORIO_ADMIN_ACESSADO",
+                "Relatório administrativo acessado com sucesso. Pesquisas: " + 
+                (relatorio.getPesquisas() != null ? relatorio.getPesquisas().getConcluidas() : 0) + 
+                ", Sentimentos analisados: " + 
+                (relatorio.getSentimentos() != null ? relatorio.getSentimentos().size() : 0),
+                "sistema"
+            );
             
             return ResponseEntity.ok(relatorio);
         } catch (Exception e) {
-            System.err.println("❌ DEBUG RelatorioController: Erro: " + e.getMessage());
-            e.printStackTrace();
+            // LOG: Registrar erro no acesso ao relatório
+            auditoriaService.logarAcao(
+                "admin",
+                "RELATORIO_ADMIN_ERRO",
+                "Erro ao gerar relatório administrativo: " + e.getMessage() + " - Tipo: " + e.getClass().getSimpleName(),
+                "sistema"
+            );
+            
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         }
     }
