@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import br.com.fiap.wellora.dto.RelatorioAdminResponse;
 import br.com.fiap.wellora.model.QuestionarioPsicossocial;
-import br.com.fiap.wellora.model.ResponseAnalytics;
 import br.com.fiap.wellora.repository.QuestionarioRepository;
 import br.com.fiap.wellora.repository.ResponseAnalyticsRepository;
 
@@ -20,44 +19,38 @@ import org.springframework.data.mongodb.core.query.Query;
 
 @Service
 public class RelatorioService {
-
-    @Autowired
-    private QuestionarioRepository questionarioRepository;
-
+    
     @Autowired
     private ResponseAnalyticsRepository responseAnalyticsRepository;
-
+    
+    @Autowired
+    private QuestionarioRepository questionarioRepository;
+    
+    @Autowired
+    private JwtService jwtService;
+    
     @Autowired
     private MongoTemplate mongoTemplate;
 
-    @Autowired
-    private JwtService jwtService;
-
+    /**
+     * Gera relatório administrativo com análise real de sentimentos
+     */
     public RelatorioAdminResponse gerarRelatorioAdmin(String token) throws Exception {
-        RelatorioAdminResponse relatorio = new RelatorioAdminResponse();
-        relatorio.setTitulo("Relatório de Bem-estar Organizacional");
+        // Autenticar admin
+        String email = jwtService.getEmailFromToken(token);
+        System.out.println("🔍 DEBUG RelatorioService: Admin " + email + " gerando relatório");
 
-        // PERFORMANCE OTIMIZADA: Usar responseAnalytics (dados pré-processados)
-        List<ResponseAnalytics> analytics = responseAnalyticsRepository.findAllByOrderByCreatedAtDesc();
-        long countAnonymousResponses = mongoTemplate.count(new Query(), "anonymous_responses");
+        RelatorioAdminResponse relatorio = new RelatorioAdminResponse();
+        relatorio.setTitulo("Relatório Administrativo - Wellora");
         
-        System.out.println("🔍 DEBUG RelatorioService: Analytics encontrados: " + analytics.size());
-        System.out.println("🔍 DEBUG RelatorioService: Anonymous responses: " + countAnonymousResponses);
-        
-        // SURVEYS COMPLETED - usar dados reais
-        int totalRespostas = (int) countAnonymousResponses;
-        
-        if (totalRespostas > 0) {
-            int meta = totalRespostas + 10;
-            int porcentagemConclusao = (totalRespostas * 100) / meta;
-            RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
-                totalRespostas, meta, porcentagemConclusao);
-            relatorio.setPesquisas(pesquisas);
-            System.out.println("🔍 DEBUG RelatorioService: Pesquisas: " + pesquisas);
-        } else {
-            RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(0, 10, 0);
-            relatorio.setPesquisas(pesquisas);
-        }
+        // SURVEYS - contar respostas reais
+        long totalRespostas = mongoTemplate.count(new Query(), "anonymous_responses");
+        System.out.println("🔍 DEBUG RelatorioService: Total pesquisas encontradas: " + totalRespostas);
+
+        // Configurar informações das pesquisas
+        RelatorioAdminResponse.PesquisasInfo pesquisas = new RelatorioAdminResponse.PesquisasInfo(
+            (int) totalRespostas, (int) totalRespostas, 100);
+        relatorio.setPesquisas(pesquisas);
 
         // FEELINGS - analisar respostas REAIS do anonymous_responses
         List<RelatorioAdminResponse.SentimentoInfo> sentimentos = new ArrayList<>();
@@ -79,12 +72,12 @@ public class RelatorioService {
             
             // Analisar cada resposta REAL
             for (Map<String, Object> response : responses) {
-                @SuppressWarnings("unchecked")
-                Map<String, String> respostas = (Map<String, String>) response.get("responses");
+                System.out.println("🔍 DEBUG: Analisando resposta completa: " + response);
                 
-                if (respostas != null) {
-                    System.out.println("🔍 DEBUG: Analisando respostas: " + respostas);
-                    
+                Map<String, String> respostas = extrairRespostas(response);
+                
+                if (respostas != null && !respostas.isEmpty()) {
+                    System.out.println("🔍 DEBUG: Respostas processadas: " + respostas);
                     // Analisar todas as respostas da pessoa
                     int sentimentoPessoa = analisarSentimentoDasRespostas(respostas);
                     
@@ -95,6 +88,8 @@ public class RelatorioService {
                     } else {
                         neutros++;
                     }
+                } else {
+                    System.out.println("🔍 DEBUG: Nenhuma resposta válida encontrada para: " + response);
                 }
             }
             
@@ -103,15 +98,15 @@ public class RelatorioService {
             // Criar sentimentos baseados na análise REAL
             if (felizes > 0) {
                 sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                    "feliz", felizes, (felizes * 100) / totalRespostas));
+                    "feliz", felizes, (felizes * 100) / (int) totalRespostas));
             }
             if (neutros > 0) {
                 sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                    "neutro", neutros, (neutros * 100) / totalRespostas));
+                    "neutro", neutros, (neutros * 100) / (int) totalRespostas));
             }
             if (cansados > 0) {
                 sentimentos.add(new RelatorioAdminResponse.SentimentoInfo(
-                    "cansado", cansados, (cansados * 100) / totalRespostas));
+                    "cansado", cansados, (cansados * 100) / (int) totalRespostas));
             }
         }
         
@@ -135,7 +130,41 @@ public class RelatorioService {
 
         return relatorio;
     }
-
+    
+    /**
+     * Extrai respostas de um documento, lidando com formatos antigos e novos
+     */
+    private Map<String, String> extrairRespostas(Map<String, Object> response) {
+        Map<String, String> respostas = null;
+        
+        // Tentar primeiro o formato novo (com campo "responses")
+        Object responsesObj = response.get("responses");
+        if (responsesObj != null) {
+            System.out.println("🔍 DEBUG: Formato novo encontrado com campo 'responses': " + responsesObj);
+            respostas = convertToStringMap(responsesObj);
+        } else {
+            // Formato antigo - as respostas estão diretamente no response
+            System.out.println("🔍 DEBUG: Formato antigo - respostas diretas no response");
+            Map<String, Object> tempMap = new HashMap<>();
+            for (Map.Entry<String, Object> entry : response.entrySet()) {
+                String key = entry.getKey();
+                // Filtrar apenas campos que parecem ser respostas (excluir metadados)
+                if (!key.equals("_id") && !key.equals("sessionId") && !key.equals("timestamp") && 
+                    !key.equals("_class") && entry.getValue() instanceof String) {
+                    tempMap.put(key, entry.getValue());
+                }
+            }
+            if (!tempMap.isEmpty()) {
+                respostas = convertToStringMap(tempMap);
+            }
+        }
+        
+        return respostas;
+    }
+    
+    /**
+     * Gera relatório para usuário específico
+     */
     public Object gerarRelatorioUsuario(String token) throws Exception {
         String email = jwtService.getEmailFromToken(token);
         Map<String, Object> relatorio = new HashMap<>();
@@ -151,6 +180,38 @@ public class RelatorioService {
         relatorio.put("totalPesquisasAnonimas", countAnonymousResponses);
         
         return relatorio;
+    }
+    
+    /**
+     * Converte um objeto de respostas para Map<String, String> de forma segura
+     * @param responsesObj O objeto que pode ser um Map com diferentes tipos
+     * @return Map<String, String> ou null se não for possível converter
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, String> convertToStringMap(Object responsesObj) {
+        try {
+            if (responsesObj instanceof Map) {
+                Map<String, Object> map = (Map<String, Object>) responsesObj;
+                Map<String, String> result = new HashMap<>();
+                
+                for (Map.Entry<String, Object> entry : map.entrySet()) {
+                    String key = entry.getKey();
+                    Object value = entry.getValue();
+                    
+                    // Converter valor para String
+                    if (value != null) {
+                        result.put(key, value.toString());
+                    }
+                }
+                
+                System.out.println("🔍 DEBUG: Convertido para Map<String,String>: " + result);
+                return result;
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Erro ao converter respostas para Map<String,String>: " + e.getMessage());
+        }
+        
+        return null;
     }
     
     /**
