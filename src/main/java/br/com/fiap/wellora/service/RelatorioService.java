@@ -7,15 +7,14 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Service;
 
 import br.com.fiap.wellora.dto.RelatorioAdminResponse;
 import br.com.fiap.wellora.model.QuestionarioPsicossocial;
 import br.com.fiap.wellora.repository.QuestionarioRepository;
 import br.com.fiap.wellora.repository.ResponseAnalyticsRepository;
-
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Query;
 
 @Service
 public class RelatorioService {
