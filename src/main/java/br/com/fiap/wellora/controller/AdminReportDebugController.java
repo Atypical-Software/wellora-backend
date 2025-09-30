@@ -66,7 +66,6 @@ public class AdminReportDebugController {
             response.put("status", "success");
             response.put("message", "Dados mock para teste");
             
-            System.out.println("✅ Retornando dados mock do relatório admin");
             
         } catch (Exception e) {
             response.put("status", "error");

@@ -42,17 +42,14 @@ public class QuestionController {
             @RequestHeader("Authorization") String authHeader) {
 
         try {
-            System.out.println("🔍 DEBUG: Iniciando busca de perguntas diárias (SISTEMA ALEATÓRIO)");
             
             // Validar token anônimo
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                System.out.println("❌ DEBUG: Header Authorization inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
             String token = authHeader.substring(7);
             if (!jwtService.isValidAnonymousToken(token)) {
-                System.out.println("❌ DEBUG: Token anônimo inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
@@ -60,17 +57,13 @@ public class QuestionController {
             LocalDate today = LocalDate.now();
             long seed = today.toEpochDay(); // Sempre a mesma seed para o mesmo dia
             
-            System.out.println("🔍 DEBUG: Data de hoje: " + today);
-            System.out.println("🔍 DEBUG: Seed para aleatoriedade: " + seed);
 
             // Buscar TODAS as perguntas disponíveis (sem filtros)
             Query query = new Query();
             List<Question> allQuestions = mongoTemplate.find(query, Question.class);
             
-            System.out.println("🔍 DEBUG: Total de perguntas no banco: " + allQuestions.size());
 
             if (allQuestions.isEmpty()) {
-                System.out.println("❌ DEBUG: Nenhuma pergunta encontrada no banco!");
                 Map<String, Object> emptyResponse = new HashMap<>();
                 emptyResponse.put("questions", new ArrayList<>());
                 emptyResponse.put("message", "Nenhuma pergunta disponível");
@@ -81,9 +74,7 @@ public class QuestionController {
             // Selecionar 5 perguntas usando aleatoriedade baseada na data
             List<Question> dailyQuestions = selectDailyQuestions(allQuestions, seed, 5);
             
-            System.out.println("🔍 DEBUG: Perguntas selecionadas para hoje: " + dailyQuestions.size());
             for (Question q : dailyQuestions) {
-                System.out.println("🔍 DEBUG: - " + q.getText());
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -109,29 +100,21 @@ public class QuestionController {
             @RequestBody Map<String, Object> responses) {
 
         try {
-            System.out.println("🔍 DEBUG: Recebendo submissão de respostas...");
-            System.out.println("🔍 DEBUG: AuthHeader: " + authHeader);
-            System.out.println("🔍 DEBUG: Responses: " + responses);
             
             // Validar token anônimo
             if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-                System.out.println("❌ DEBUG: AuthHeader inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
             String token = authHeader.substring(7);
-            System.out.println("🔍 DEBUG: Token extraído: " + token.substring(0, 20) + "...");
             
             if (!jwtService.isValidAnonymousToken(token)) {
-                System.out.println("❌ DEBUG: Token anônimo inválido");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
             }
 
             String sessionId = jwtService.getSessionIdFromToken(token);
             String empresaId = jwtService.getEmpresaIdFromToken(token);
             
-            System.out.println("🔍 DEBUG: SessionId: " + sessionId);
-            System.out.println("🔍 DEBUG: EmpresaId: " + empresaId);
 
             // Criar documento de resposta anônima
             Map<String, Object> responseDocument = new HashMap<>();
@@ -141,12 +124,10 @@ public class QuestionController {
             responseDocument.put("submittedAt", java.time.Instant.now());
             responseDocument.put("date", LocalDate.now().toString());
 
-            System.out.println("🔍 DEBUG: Documento a salvar: " + responseDocument);
 
             // Salvar no MongoDB
             mongoTemplate.save(responseDocument, "anonymous_responses");
             
-            System.out.println("✅ DEBUG: Documento salvo com sucesso em anonymous_responses!");
 
             Map<String, String> result = new HashMap<>();
             result.put("status", "success");

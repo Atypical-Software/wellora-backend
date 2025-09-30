@@ -48,7 +48,6 @@ public class AdminResetController {
                 response.put("newPassword", newPassword);
                 response.put("message", "Password reset successfully");
                 
-                System.out.println("✅ Password reset for: " + email + " / " + newPassword);
                 
             } else {
                 response.put("status", "not_found");
